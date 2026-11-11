@@ -8,6 +8,11 @@
     <string name="action_add_to_blacklist">افزودن به لیست سیاه</string>
     <string name="action_add_to_favorites">افزودن به موارد مورد علاقه</string>
     <string name="action_add_to_playing_queue">افزودن به لیست پخش آهنگ</string>
+    <string name="smart_playlist">ساخت میکس هوشمند با Last.fm</string>
+    <string name="smart_playlist_name">میکس هوشمند Last.fm</string>
+    <string name="smart_playlist_building">در حال تطبیق کتابخانه موسیقی با رتبه‌بندی Last.fm…</string>
+    <string name="smart_playlist_empty">آهنگ رتبه‌بندی‌شده‌ای در پوشه‌های Music شما پیدا نشد.</string>
+    <string name="smart_playlist_failed">اتصال به Last.fm برقرار نشد. دوباره تلاش کنید.</string>
     <string name="action_add_to_playlist">افزودن به لیست پخش</string>
     <string name="action_cancel">انصراف</string>
     <string name="action_cast">پخش و نمایش تصویر</string>
