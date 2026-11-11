@@ -86,8 +86,7 @@ object FolderArtistRepository {
                     )
                 }
                 Album(
-                    if (albumName == "Singles") -abs(albumPath.hashCode().toLong()).coerceAtLeast(1L)
-                    else entries.first().second.albumId,
+                    -(abs(albumPath.hashCode().toLong()) + 1L),
                     remappedSongs
                 )
             }
