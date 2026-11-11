@@ -261,11 +261,16 @@ class PlaylistsFragment :
         }
         requireContext().showToast(getString(R.string.smart_playlist_building))
         lifecycleScope.launch {
-            val matches = withContext(Dispatchers.IO) {
+            val result = withContext(Dispatchers.IO) {
                 runCatching {
                     SmartPlaylistEngine.buildLastFmMix(localSongs, get<LastFMService>())
-                }.getOrDefault(emptyList())
+                }
             }
+            if (result.isFailure) {
+                requireContext().showToast(getString(R.string.smart_playlist_failed))
+                return@launch
+            }
+            val matches = result.getOrDefault(emptyList())
             if (matches.isEmpty()) {
                 requireContext().showToast(getString(R.string.smart_playlist_empty))
             } else {
