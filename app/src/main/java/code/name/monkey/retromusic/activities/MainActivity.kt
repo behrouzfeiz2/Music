@@ -61,22 +61,13 @@ class MainActivity : AbsCastActivity() {
         val navInflater = navController.navInflater
         val navGraph = navInflater.inflate(R.navigation.main_graph)
 
-        val categoryInfo: CategoryInfo = PreferenceUtil.libraryCategory.first { it.visible }
-        if (categoryInfo.visible) {
-            if (!navGraph.contains(PreferenceUtil.lastTab)) PreferenceUtil.lastTab =
-                categoryInfo.category.id
-            navGraph.setStartDestination(
-                if (PreferenceUtil.rememberLastTab) {
-                    PreferenceUtil.lastTab.let {
-                        if (it == 0) {
-                            categoryInfo.category.id
-                        } else {
-                            it
-                        }
-                    }
-                } else categoryInfo.category.id
-            )
+        val primaryTabs = setOf(R.id.action_home, R.id.action_artist, R.id.action_playlist)
+        if (PreferenceUtil.lastTab !in primaryTabs) {
+            PreferenceUtil.lastTab = R.id.action_home
         }
+        navGraph.setStartDestination(
+            if (PreferenceUtil.rememberLastTab) PreferenceUtil.lastTab else R.id.action_home
+        )
         navController.graph = navGraph
         navigationView.setupWithNavController(navController)
         // Scroll Fragment to top
@@ -92,7 +83,7 @@ class MainActivity : AbsCastActivity() {
                 currentFragment(R.id.fragment_container)?.enterTransition = null
             }
             when (destination.id) {
-                R.id.action_home, R.id.action_song, R.id.action_album, R.id.action_artist, R.id.action_folder, R.id.action_playlist, R.id.action_genre, R.id.action_search -> {
+                R.id.action_home, R.id.action_artist, R.id.action_playlist -> {
                     // Save the last tab
                     if (PreferenceUtil.rememberLastTab) {
                         saveTab(destination.id)
@@ -112,7 +103,7 @@ class MainActivity : AbsCastActivity() {
     }
 
     private fun saveTab(id: Int) {
-        if (PreferenceUtil.libraryCategory.firstOrNull { it.category.id == id }?.visible == true) {
+        if (id in setOf(R.id.action_home, R.id.action_artist, R.id.action_playlist)) {
             PreferenceUtil.lastTab = id
         }
     }
