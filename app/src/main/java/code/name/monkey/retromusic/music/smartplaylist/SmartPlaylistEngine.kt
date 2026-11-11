@@ -15,6 +15,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.text.Normalizer
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Builds a ranked mix exclusively from tracks already present in the local library.
@@ -39,17 +40,23 @@ object SmartPlaylistEngine {
         if (localArtists.isEmpty()) return@coroutineScope emptyList()
 
         val semaphore = Semaphore(3)
+        val successfulRequests = AtomicInteger(0)
         val ranked = localArtists.mapIndexed { index, entry ->
             async {
                 semaphore.withPermit {
                     runCatching {
                         val artistName = entry.key.substringAfterLast('/')
                         val response = lastFm.artistTopTracks(artistName, 50)
+                        successfulRequests.incrementAndGet()
                         parseMatches(response, artistName, entry.value, index)
                     }.getOrDefault(emptyList())
                 }
             }
         }.awaitAll().flatten()
+
+        if (successfulRequests.get() == 0) {
+            throw IllegalStateException("Last.fm did not return any artist rankings")
+        }
 
         ranked.sortedWith(
             compareByDescending<RankedTrack> { it.playCount }
