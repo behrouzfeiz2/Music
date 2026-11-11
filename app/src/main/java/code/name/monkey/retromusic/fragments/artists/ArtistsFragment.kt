@@ -42,7 +42,10 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         libraryViewModel.getSongs().observe(viewLifecycleOwner) {
-            adapter?.swapDataSet(FolderArtistRepository.artists(it))
+            adapter?.apply {
+                swapDataSet(FolderArtistRepository.artists(it))
+                albumArtistsOnly = false
+            }
         }
     }
 
