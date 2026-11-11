@@ -17,6 +17,7 @@ package code.name.monkey.retromusic.fragments.artists
 import androidx.lifecycle.*
 import code.name.monkey.retromusic.interfaces.IMusicServiceEventListener
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmArtist
 import code.name.monkey.retromusic.repository.RealRepository
@@ -38,7 +39,14 @@ class ArtistDetailsViewModel(
         viewModelScope.launch(IO) {
             artistId?.let { artistDetails.postValue(realRepository.artistById(it)) }
 
-            artistName?.let { artistDetails.postValue(realRepository.albumArtistByName(it)) }
+            artistName?.let { name ->
+                if (FolderArtistRepository.isFolderKey(name)) {
+                    val songs = realRepository.allSongs()
+                    artistDetails.postValue(FolderArtistRepository.artistForKey(songs, name) ?: Artist.empty)
+                } else {
+                    artistDetails.postValue(realRepository.albumArtistByName(name))
+                }
+            }
         }
     }
 
