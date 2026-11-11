@@ -11,7 +11,7 @@ import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.PreferenceUtil
 import java.io.File
 import java.text.Collator
-import java.util.Base64
+import android.util.Base64
 
 /**
  * Builds the artist/album hierarchy from the on-device Music directory.
@@ -46,10 +46,10 @@ object FolderArtistRepository {
     }
 
     fun artistForFolder(songs: List<Song>, folderPath: String): Artist {
-        val normalized = File(folderPath).absoluteFile.normalize().path
+        val normalized = runCatching { File(folderPath).canonicalPath }.getOrDefault(File(folderPath).absolutePath)
         val tracks = songs.filter { song ->
             val path = location(song.data)?.artistPath
-            path != null && File(path).absoluteFile.normalize().path == normalized
+            path != null && runCatching { File(path).canonicalPath }.getOrDefault(File(path).absolutePath) == normalized
         }
         return buildArtist(normalized, tracks) ?: Artist.empty
     }
@@ -57,8 +57,7 @@ object FolderArtistRepository {
     fun folderPathForSong(path: String): String? = location(path)?.artistPath
 
     fun keyForFolder(folderPath: String): String =
-        FOLDER_KEY_PREFIX + Base64.getUrlEncoder().withoutPadding()
-            .encodeToString(folderPath.toByteArray(Charsets.UTF_8))
+        FOLDER_KEY_PREFIX + Base64.encodeToString(folderPath.toByteArray(Charsets.UTF_8), Base64.URL_SAFE or Base64.NO_WRAP)
 
     fun isFolderKey(value: String): Boolean = value.startsWith(FOLDER_KEY_PREFIX)
 
@@ -66,7 +65,7 @@ object FolderArtistRepository {
         if (!isFolderKey(key)) return null
         val encoded = key.removePrefix(FOLDER_KEY_PREFIX)
         val path = runCatching {
-            String(Base64.getUrlDecoder().decode(encoded), Charsets.UTF_8)
+            String(Base64.decode(encoded, Base64.URL_SAFE or Base64.NO_WRAP), Charsets.UTF_8)
         }.getOrNull() ?: return null
         return artistForFolder(songs, path)
     }
@@ -97,7 +96,7 @@ object FolderArtistRepository {
         val musicRoot = generateSequence(parent) { it.parentFile }
             .firstOrNull { it.name.equals("Music", ignoreCase = true) } ?: return null
         val relative = runCatching { parent.relativeTo(musicRoot) }.getOrNull() ?: return null
-        val parts = relative.toPath().map { it.toString() }
+        val parts = relative.path.split(File.separatorChar).filter { it.isNotBlank() }
         val artistName = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return null
         val artistPath = File(musicRoot, artistName).absolutePath
         val albumName = parts.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "Singles"
