@@ -83,7 +83,7 @@ object SmartPlaylistEngine {
 
     private fun normalize(value: String): String {
         val withoutVersion = value.replace(
-            Regex("""(?i)\\s*[\\[(][^\\])]*(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|version|bonus track|anniversary)[^\\])]*[\\])\\s*"""),
+            Regex("""(?i)\s*[\[(][^)]*(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|version|bonus track|anniversary)[^)]*[\])\s*"""),
             " "
         )
         val decomposed = Normalizer.normalize(withoutVersion, Normalizer.Form.NFD)
