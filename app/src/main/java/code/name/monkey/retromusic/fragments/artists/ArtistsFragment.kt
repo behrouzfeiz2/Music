@@ -162,7 +162,6 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
         val layoutItem = menu.findItem(R.id.action_layout_type)
         setupLayoutMenu(layoutItem.subMenu!!)
         setUpSortOrderMenu(menu.findItem(R.id.action_sort_order).subMenu!!)
-        setupAlbumArtistMenu(menu)
         //Setting up cast button
         requireContext().setUpMediaRouteButton(menu)
     }
@@ -255,9 +254,6 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
         if (handleSortOrderMenuItem(item)) {
             return true
         }
-        if (handleAlbumArtistMenu(item)) {
-            return true
-        }
         return super.onMenuItemSelected(item)
     }
 
@@ -332,6 +328,6 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
 
     override fun onResume() {
         super.onResume()
-        libraryViewModel.forceReload(ReloadType.Artists)
+        libraryViewModel.forceReload(ReloadType.Songs)
     }
 }
