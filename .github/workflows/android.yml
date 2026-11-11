@@ -1,6 +1,7 @@
 name: Android CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ dev, main ]
   pull_request:
@@ -30,8 +31,10 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build
-        run: ./gradlew app:assemble
+      - name: Compile debug variants
+        run: ./gradlew :app:compileNormalDebugKotlin :app:compileFdroidDebugKotlin
+      - name: Build release APKs
+        run: ./gradlew :app:assembleNormalRelease :app:assembleFdroidRelease
       - uses: actions/upload-artifact@v4
         with:
           name: fdroid-release-apk
