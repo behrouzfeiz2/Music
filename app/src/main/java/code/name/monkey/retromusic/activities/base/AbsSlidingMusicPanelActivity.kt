@@ -464,20 +464,14 @@ abstract class AbsSlidingMusicPanelActivity : AbsMusicServiceActivity(),
 
     fun updateTabs() {
         binding.navigationView.menu.clear()
-        val currentTabs: List<CategoryInfo> = PreferenceUtil.libraryCategory
-        for (tab in currentTabs) {
-            if (tab.visible) {
-                val menu = tab.category
-                binding.navigationView.menu.add(0, menu.id, 0, menu.stringRes)
-                    .setIcon(menu.icon)
-            }
-        }
-        if (binding.navigationView.menu.size == 1) {
-            isInOneTabMode = true
-            binding.navigationView.isVisible = false
-        } else {
-            isInOneTabMode = false
-        }
+        binding.navigationView.menu.add(0, R.id.action_home, 0, R.string.home)
+            .setIcon(R.drawable.ic_home)
+        binding.navigationView.menu.add(0, R.id.action_artist, 1, R.string.artists)
+            .setIcon(R.drawable.ic_artist)
+        binding.navigationView.menu.add(0, R.id.action_playlist, 2, R.string.playlists)
+            .setIcon(R.drawable.ic_queue_music)
+        isInOneTabMode = false
+        binding.navigationView.isVisible = true
     }
 
     private fun updateColor() {
