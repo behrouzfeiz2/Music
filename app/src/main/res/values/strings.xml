@@ -9,6 +9,11 @@
     <string name="action_add_to_favorites">Add to favorites</string>
     <string name="action_add_to_playing_queue">Add to playing queue</string>
     <string name="action_add_to_playlist">Add to playlist</string>
+    <string name="smart_playlist">Build Last.fm Smart Mix</string>
+    <string name="smart_playlist_name">Last.fm Smart Mix</string>
+    <string name="smart_playlist_building">Matching your library with Last.fm rankings…</string>
+    <string name="smart_playlist_empty">No matching ranked tracks were found in your Music folders.</string>
+    <string name="smart_playlist_failed">Could not reach Last.fm. Please try again.</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_cast">Cast</string>
     <string name="action_clear_playing_queue">Clear playing queue</string>
