@@ -16,6 +16,7 @@ package code.name.monkey.retromusic.network
 
 import code.name.monkey.retromusic.network.model.LastFmAlbum
 import code.name.monkey.retromusic.network.model.LastFmArtist
+import com.google.gson.JsonObject
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
@@ -36,6 +37,12 @@ interface LastFMService {
         @Query("lang") language: String?,
         @Header("Cache-Control") cacheControl: String?
     ): LastFmArtist
+
+    @GET("$BASE_QUERY_PARAMETERS&method=artist.gettoptracks")
+    suspend fun artistTopTracks(
+        @Query("artist") artistName: String,
+        @Query("limit") limit: Int = 50
+    ): JsonObject
 
     @GET("$BASE_QUERY_PARAMETERS&method=album.getinfo")
     suspend fun albumInfo(
