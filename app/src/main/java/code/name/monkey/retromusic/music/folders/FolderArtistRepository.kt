@@ -11,6 +11,7 @@ import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.PreferenceUtil
 import java.io.File
 import java.text.Collator
+import kotlin.math.abs
 import android.util.Base64
 
 /**
@@ -84,7 +85,11 @@ object FolderArtistRepository {
                         song.artistId, File(folderPath).name, song.composer, File(folderPath).name
                     )
                 }
-                Album(albumPath.hashCode().toLong(), remappedSongs)
+                Album(
+                    if (albumName == "Singles") -abs(albumPath.hashCode().toLong()).coerceAtLeast(1L)
+                    else entries.first().second.albumId,
+                    remappedSongs
+                )
             }
         if (albums.isEmpty()) return null
         return Artist(folderPath.hashCode().toLong(), albums, true)
