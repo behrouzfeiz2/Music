@@ -50,8 +50,8 @@ fun provideOkHttp(context: Context, cache: Cache): OkHttpClient {
     return OkHttpClient.Builder()
         .addNetworkInterceptor(logInterceptor())
         .addInterceptor(headerInterceptor(context))
-        .connectTimeout(1, TimeUnit.SECONDS)
-        .readTimeout(1, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
         .cache(cache)
         .build()
 }
