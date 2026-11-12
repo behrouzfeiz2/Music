@@ -32,7 +32,7 @@ class OnlineFragment : Fragment(R.layout.fragment_online) {
             loadsImagesAutomatically = true
             mediaPlaybackRequiresUserGesture = false
             javaScriptCanOpenWindowsAutomatically = true
-            setSupportMultipleWindows(true)
+            setSupportMultipleWindows(false)
         }
         webView.webViewClient = WebViewClient()
         webView.webChromeClient = WebChromeClient()
