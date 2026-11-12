@@ -85,6 +85,24 @@
         android:layout="@layout/preference_category_title"
         android:title="@string/lastfm_artwork_title">
 
+        <androidx.preference.EditTextPreference
+            android:key="lastfm_api_key"
+            android:layout="@layout/list_item_view"
+            android:title="@string/lastfm_api_key_title"
+            android:summary="@string/lastfm_api_key_summary"
+            android:dialogTitle="@string/lastfm_api_key_title"
+            android:inputType="textNoSuggestions"
+            app:icon="@drawable/ic_settings" />
+
+        <androidx.preference.EditTextPreference
+            android:key="lastfm_shared_secret"
+            android:layout="@layout/list_item_view"
+            android:title="@string/lastfm_shared_secret_title"
+            android:summary="@string/lastfm_shared_secret_summary"
+            android:dialogTitle="@string/lastfm_shared_secret_title"
+            android:inputType="textPassword"
+            app:icon="@drawable/ic_settings" />
+
         <androidx.preference.Preference
             android:key="lastfm_rebuild_archive"
             android:layout="@layout/list_item_view"
