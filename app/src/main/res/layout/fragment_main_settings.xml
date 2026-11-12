@@ -78,5 +78,14 @@
             app:settingListItemText="@string/backup_restore_settings_summary"
             app:settingListItemTitle="@string/backup_restore_title" />
 
+        <code.name.monkey.retromusic.views.SettingListItemView
+            android:id="@+id/aboutSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:settingListItemIcon="@drawable/ic_info_outline"
+            app:settingListItemIconColor="@color/md_blue_A400"
+            app:settingListItemText="@string/about_settings_summary"
+            app:settingListItemTitle="@string/action_about" />
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
