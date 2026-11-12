@@ -33,8 +33,8 @@ object LastFmCatalogApi {
                 val connection = URL(endpoint).openConnection() as HttpURLConnection
                 try {
                     connection.requestMethod = "GET"
-                    connection.connectTimeout = 12000
-                    connection.readTimeout = 12000
+                    connection.connectTimeout = 20000
+                    connection.readTimeout = 20000
                     connection.setRequestProperty("Accept", "application/json")
                     connection.setRequestProperty("User-Agent", "Music Android app (Branex.ir)")
                     val code = connection.responseCode
@@ -85,6 +85,14 @@ object LastFmCatalogApi {
                     }
                     imageUrl?.let { imageCache[key] = it }
                     return@withContext imageUrl
+                } catch (error: java.io.IOException) {
+                    // Retry transient network failures (including timeouts) before giving up.
+                    if (attempt < 2) {
+                        attempt++
+                        kotlinx.coroutines.delay(attempt * 1500L)
+                        continue
+                    }
+                    throw error
                 } finally {
                     connection.disconnect()
                 }
