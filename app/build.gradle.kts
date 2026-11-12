@@ -8,8 +8,6 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
 }
 
-val spotifyClientId = providers.gradleProperty("spotifyClientId").orElse(providers.environmentVariable("SPOTIFY_CLIENT_ID")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
-val spotifyClientSecret = providers.gradleProperty("spotifyClientSecret").orElse(providers.environmentVariable("SPOTIFY_CLIENT_SECRET")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
 
 android {
     compileSdk = 36
@@ -26,8 +24,6 @@ android {
         applicationId = namespace
         versionCode = 10705
         versionName = "0.2.1"
-        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"$spotifyClientId\"")
-        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"$spotifyClientSecret\"")
 
         buildConfigField("String", "GOOGLE_PLAY_LICENSING_KEY", "\"${getProperty(getProperties("../public.properties"), "GOOGLE_PLAY_LICENSE_KEY")}\"")
     }
