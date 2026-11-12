@@ -29,7 +29,7 @@ class LastFmArtistArtworkWorker(
 
     private val repository: RealRepository by inject()
 
-    override suspend fun doWork(): Result = workerMutex.withLock {
+    override suspend fun doWork(): androidx.work.ListenableWorker.Result = workerMutex.withLock {
         val artists = try {
             withContext(Dispatchers.IO) {
                 repository.fetchArtists().distinctBy { it.id }
@@ -37,7 +37,7 @@ class LastFmArtistArtworkWorker(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            return@withLock Result.retry()
+            return@withLock androidx.work.ListenableWorker.Result.retry()
         }
 
         val preferences = applicationContext.getSharedPreferences(
@@ -52,7 +52,7 @@ class LastFmArtistArtworkWorker(
             .take(BATCH_SIZE)
             .toList()
 
-        if (pending.isEmpty()) return@withLock Result.success()
+        if (pending.isEmpty()) return@withLock androidx.work.ListenableWorker.Result.success()
 
         val imageUtil = CustomArtistImageUtil.getInstance(applicationContext)
         pending.forEachIndexed { index, artist ->
