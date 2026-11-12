@@ -92,6 +92,34 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
     }
 
+    suspend fun cacheSpotifyArtistImage(artist: Artist, imageUrl: String): Boolean =
+        withContext(IO) {
+            runCatching {
+                val context = App.getContext()
+                val bitmap = Glide.with(context)
+                    .asBitmap()
+                    .load(imageUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .submit()
+                    .get()
+                val dir = File(context.filesDir, SPOTIFY_FOLDER_NAME)
+                if (!dir.exists() && !dir.mkdirs()) return@withContext false
+                val file = getSpotifyFile(artist)
+                val saved = file.outputStream().buffered().use { output ->
+                    ImageUtil.resizeBitmap(bitmap, 2048)
+                        .compress(Bitmap.CompressFormat.JPEG, 92, output)
+                }
+                if (saved) {
+                    ArtistSignatureUtil.getInstance(context).updateArtistSignature(artist.name)
+                    context.contentResolver.notifyChange(
+                        MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, null
+                    )
+                }
+                saved
+            }.getOrDefault(false)
+        }
+
     suspend fun resetCustomArtistImage(artist: Artist) {
         withContext(IO) {
             mPreferences.edit { putBoolean(getFileName(artist), false) }
@@ -115,7 +143,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
 
     companion object {
         private const val CUSTOM_ARTIST_IMAGE_PREFS = "custom_artist_image"
-        private const val FOLDER_NAME = "/custom_artist_images/"
+        private const val FOLDER_NAME = "/custom_artist_images/"\n        private const val SPOTIFY_FOLDER_NAME = "/spotify_artist_images/"
 
         private var sInstance: CustomArtistImageUtil? = null
 
