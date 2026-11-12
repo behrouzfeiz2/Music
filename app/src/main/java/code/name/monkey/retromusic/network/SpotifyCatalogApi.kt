@@ -2,7 +2,8 @@ package code.name.monkey.retromusic.network
 
 import android.net.Uri
 import android.util.Base64
-import code.name.monkey.retromusic.BuildConfig
+import androidx.preference.PreferenceManager
+import code.name.monkey.retromusic.App
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -16,12 +17,13 @@ data class SpotifyArtistProfile(val name: String, val imageUrl: String?, val spo
 object SpotifyCatalogApi {
     private var accessToken: String? = null
     private var tokenExpiresAt: Long = 0L
+    private var tokenCredentialsFingerprint: Int = 0
     private val artistImageCache = ConcurrentHashMap<String, String>()
 
     suspend fun findArtistImage(name: String): String? =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             artistImageCache[normalize(name)]?.let { return@withContext it }
-            if (BuildConfig.SPOTIFY_CLIENT_ID.isBlank() || BuildConfig.SPOTIFY_CLIENT_SECRET.isBlank()) {
+            if (getCredentials().let { it.first.isBlank() || it.second.isBlank() }) {
                 return@withContext null
             }
             val token = getAccessToken() ?: return@withContext null
@@ -103,11 +105,25 @@ object SpotifyCatalogApi {
             )
         }
 
+    private fun getCredentials(): Pair<String, String> {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
+        return preferences.getString("spotify_client_id", "").orEmpty() to
+            preferences.getString("spotify_client_secret", "").orEmpty()
+    }
+
     @Synchronized
     private fun getAccessToken(): String? {
         val now = System.currentTimeMillis()
+        val (clientId, clientSecret) = getCredentials()
+        if (clientId.isBlank() || clientSecret.isBlank()) return null
+        val credentials = "$clientId:$clientSecret"
+        val fingerprint = credentials.hashCode()
+        if (fingerprint != tokenCredentialsFingerprint) {
+            accessToken = null
+            tokenExpiresAt = 0L
+            tokenCredentialsFingerprint = fingerprint
+        }
         accessToken?.takeIf { now < tokenExpiresAt - 60_000L }?.let { return it }
-        val credentials = "${BuildConfig.SPOTIFY_CLIENT_ID}:${BuildConfig.SPOTIFY_CLIENT_SECRET}"
         val basic = Base64.encodeToString(credentials.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         val connection = URL("https://accounts.spotify.com/api/token").openConnection() as HttpURLConnection
         return try {
