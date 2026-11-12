@@ -517,4 +517,9 @@
     <string name="scan_complete">Scan complete: %1$d media items found.</string>
     <string name="pref_save_last_directory_summary">هنگام تغییر به نمای پوشه، آخرین فهرست استفاده شده را بازیابی کنید</string>
     <string name="pref_save_last_directory_title">ذخیره آخرین فهرست</string>
+    <string name="spotify_connect">اتصال Spotify</string>
+    <string name="spotify_client_id">Client ID</string>
+    <string name="spotify_client_id_summary">شناسه برنامه Spotify را وارد کنید</string>
+    <string name="spotify_client_secret">Client Secret</string>
+    <string name="spotify_client_secret_summary">کلید محرمانه برنامه Spotify را وارد کنید</string>
 </resources>
