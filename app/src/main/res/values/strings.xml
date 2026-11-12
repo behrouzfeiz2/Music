@@ -31,7 +31,7 @@
     <string name="lastfm_rebuild_summary">Scan your music library and save available artist images from Last.fm. Keep this page open until the scan finishes. Images are provided by Last.fm and remain subject to its API terms.</string>
     <string name="lastfm_rebuild_starting">Preparing Last.fm archive scan… Please keep this page open.</string>
     <string name="lastfm_rebuild_progress">Checking artist %1$d of %2$d… Keep this page open.</string>
-    <string name="lastfm_rebuild_complete">Scanned %1$d artists; saved %2$d images; %3$d not found; %4$d download/save failures.</string>
+    <string name="lastfm_rebuild_complete">Scanned %1$d artists; saved %2$d images; %3$d not found; %4$d request/download/save failures.</string>
     <string name="lastfm_rebuild_failed">Could not reach Last.fm. Check your internet connection and try again.</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_cast">Cast</string>
