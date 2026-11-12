@@ -385,45 +385,39 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             ).show()
 
             lifecycleScope.launch {
-                listSongs(
-                    appContext,
-                    selectedFolders,
-                    AUDIO_FILE_FILTER,
-                    fileComparator
-                ) { songs ->
-                    lifecycleScope.launch {
-                        if (songs.isEmpty()) {
-                            Toast.makeText(
-                                requireContext(),
-                                getString(R.string.smart_playlist_empty),
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@launch
-                        }
-                        try {
-                            val result = withContext(Dispatchers.IO) {
-                                if (isDailyMix) {
-                                    DailyMixHelper.createPlaylist(appContext, songs)
-                                } else {
-                                    BestOfSelectionHelper.createPlaylist(appContext, songs)
-                                }
+                try {
+                    val result = withContext(Dispatchers.IO) {
+                        if (isBestOf) {
+                            BestOfSelectionHelper.createPlaylist(appContext, selectedFolders)
+                        } else {
+                            var listedSongs: List<Song> = emptyList()
+                            listSongs(
+                                appContext,
+                                selectedFolders,
+                                AUDIO_FILE_FILTER,
+                                fileComparator
+                            ) { songs -> listedSongs = songs }
+                            if (listedSongs.isEmpty()) {
+                                throw IllegalStateException(getString(R.string.smart_playlist_empty))
                             }
-                            libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.HomeSections)
-                            libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.Playlists)
-                            val message = if (isDailyMix) {
-                                getString(R.string.daily_mix_created, result.second, result.first)
-                            } else {
-                                getString(R.string.best_of_selection_created, result.second, result.first)
-                            }
-                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                        } catch (error: Exception) {
-                            Toast.makeText(
-                                requireContext(),
-                                error.message ?: getString(R.string.smart_playlist_failed),
-                                Toast.LENGTH_LONG
-                            ).show()
+                            DailyMixHelper.createPlaylist(appContext, listedSongs)
                         }
                     }
+                    libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.HomeSections)
+                    libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.Playlists)
+                    val message = if (isDailyMix) {
+                        getString(R.string.daily_mix_created, result.second, result.first)
+                    } else {
+                        getString(R.string.best_of_selection_created, result.second, result.first)
+                    }
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                } catch (error: Exception) {
+                    Log.e(TAG, "Failed to create smart playlist from selected folders", error)
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: getString(R.string.smart_playlist_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
             return
