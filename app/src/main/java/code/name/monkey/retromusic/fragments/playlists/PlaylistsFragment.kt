@@ -31,17 +31,10 @@ import code.name.monkey.retromusic.fragments.ReloadType
 import code.name.monkey.retromusic.fragments.base.AbsRecyclerViewCustomGridSizeFragment
 import code.name.monkey.retromusic.helper.SortOrder.PlaylistSortOrder
 import code.name.monkey.retromusic.interfaces.IPlaylistClickListener
-import code.name.monkey.retromusic.music.smartplaylist.SmartPlaylistEngine
-import code.name.monkey.retromusic.music.folders.FolderArtistRepository
-import code.name.monkey.retromusic.network.LastFMService
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
 import com.google.android.material.transition.MaterialSharedAxis
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import org.koin.android.ext.android.get
 
 class PlaylistsFragment :
     AbsRecyclerViewCustomGridSizeFragment<PlaylistAdapter, GridLayoutManager>(),
@@ -88,7 +81,6 @@ class PlaylistsFragment :
         }
         setupGridSizeMenu(gridSizeItem.subMenu!!)
         menu.removeItem(R.id.action_layout_type)
-        menu.add(0, R.id.action_smart_playlist, 0, R.string.smart_playlist)
         menu.add(0, R.id.action_add_to_playlist, 0, R.string.new_playlist_title)
         menu.add(0, R.id.action_import_playlist, 0, R.string.import_playlist)
         menu.findItem(R.id.action_settings).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
@@ -99,10 +91,6 @@ class PlaylistsFragment :
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_smart_playlist) {
-            buildSmartMix()
-            return true
-        }
         if (handleGridSizeMenuItem(item)) {
             return true
         }
@@ -255,42 +243,7 @@ class PlaylistsFragment :
     }
 
 
-    private fun buildSmartMix() {
-        val localSongs = libraryViewModel.getSongs().value.orEmpty()
-        if (localSongs.isEmpty()) {
-            requireContext().showToast(getString(R.string.smart_playlist_empty))
-            return
-        }
-        requireContext().showToast(getString(R.string.smart_playlist_building))
-        lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    val artistFolders = localSongs.mapNotNull { song ->
-                        FolderArtistRepository.folderPathForSong(song.data)
-                    }.distinct().map(::File)
-                    SmartPlaylistEngine.buildLastFmMix(
-                        localSongs,
-                        artistFolders,
-                        get<LastFMService>()
-                    )
-                }
-            }
-            if (result.isFailure) {
-                requireContext().showToast(getString(R.string.smart_playlist_failed))
-                return@launch
-            }
-            val matches = result.getOrDefault(emptyList())
-            if (matches.isEmpty()) {
-                requireContext().showToast(getString(R.string.smart_playlist_empty))
-            } else {
-                libraryViewModel.addToPlaylist(
-                    requireContext(),
-                    getString(R.string.smart_playlist_name),
-                    matches
-                )
-            }
-        }
-    }
+
 
     override fun onPlaylistClick(playlistWithSongs: PlaylistWithSongs, view: View) {
         exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true).addTarget(requireView())
