@@ -124,6 +124,7 @@ object RetroGlideExtension {
     ): RequestBuilder<T> {
         return diskCacheStrategy(DEFAULT_DISK_CACHE_STRATEGY)
             .signature(createSignature(song))
+            .dontAnimate()
     }
 
     fun <T> RequestBuilder<T>.albumCoverOptions(
@@ -133,6 +134,7 @@ object RetroGlideExtension {
             .error(ContextCompat.getDrawable(getContext(), DEFAULT_ALBUM_IMAGE))
             .placeholder(ContextCompat.getDrawable(getContext(), DEFAULT_ALBUM_IMAGE))
             .signature(createSignature(song))
+            .dontAnimate()
     }
 
     fun <T> RequestBuilder<T>.userProfileOptions(
