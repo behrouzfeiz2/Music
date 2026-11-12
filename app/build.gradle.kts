@@ -1,5 +1,8 @@
 import java.util.Properties
 
+val spotifyClientId = providers.gradleProperty("spotifyClientId").orElse(providers.environmentVariable("SPOTIFY_CLIENT_ID")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
+val spotifyClientSecret = providers.gradleProperty("spotifyClientSecret").orElse(providers.environmentVariable("SPOTIFY_CLIENT_SECRET")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -23,6 +26,8 @@ android {
         applicationId = namespace
         versionCode = 10703
         versionName = "7.0.3"
+        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"$spotifyClientId\"")
+        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"$spotifyClientSecret\"")
 
         buildConfigField("String", "GOOGLE_PLAY_LICENSING_KEY", "\"${getProperty(getProperties("../public.properties"), "GOOGLE_PLAY_LICENSE_KEY")}\"")
     }
