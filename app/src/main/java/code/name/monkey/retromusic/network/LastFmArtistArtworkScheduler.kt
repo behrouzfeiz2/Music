@@ -29,16 +29,30 @@ object LastFmArtistArtworkScheduler {
             "lastfm_background_artwork",
             Context.MODE_PRIVATE
         )
-        if (!preferences.getBoolean("initial_scan_scheduled", false)) {
+        // Version 2 switches the source of artist names from audio metadata
+        // to the Music/<artist>/<album> folder hierarchy. Re-run once so older
+        // metadata-based progress IDs do not suppress the folder-based scan.
+        val artistSourceVersion = 2
+        val sourceChanged = preferences.getInt("artist_source_version", 0) != artistSourceVersion
+        if (sourceChanged || !preferences.getBoolean("initial_scan_scheduled", false)) {
+            if (sourceChanged) {
+                preferences.edit()
+                    .remove("processed_artist_ids")
+                    .putInt("artist_source_version", artistSourceVersion)
+                    .putBoolean("initial_scan_scheduled", true)
+                    .apply()
+            }
             val initialWork = OneTimeWorkRequestBuilder<LastFmArtistArtworkWorker>()
                 .setConstraints(constraints)
                 .build()
             workManager.enqueueUniqueWork(
                 BATCH_CHAIN_NAME,
-                ExistingWorkPolicy.KEEP,
+                if (sourceChanged) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP,
                 initialWork
             )
-            preferences.edit().putBoolean("initial_scan_scheduled", true).apply()
+            if (!sourceChanged) {
+                preferences.edit().putBoolean("initial_scan_scheduled", true).apply()
+            }
         }
 
         // Recheck periodically so artists added to the library later are included.
