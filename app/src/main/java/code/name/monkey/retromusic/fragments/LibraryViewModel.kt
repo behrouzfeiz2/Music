@@ -398,6 +398,40 @@ class LibraryViewModel(
         }
     }
 
+    /**
+     * Replaces the contents of a generated playlist and returns only after
+     * the database writes have completed. Used by Best Of generation.
+     */
+    suspend fun replacePlaylistContents(
+        context: Context,
+        playlistName: String,
+        songs: List<Song>
+    ) = withContext(IO) {
+        require(playlistName.isNotBlank()) { "Playlist name cannot be empty" }
+        require(songs.isNotEmpty()) { "Cannot create a playlist without songs" }
+
+        val existing = checkPlaylistExists(playlistName).firstOrNull()
+        val playlistId = if (existing == null) {
+            createPlaylist(PlaylistEntity(playlistName = playlistName))
+        } else {
+            repository.deletePlaylistSongs(listOf(existing))
+            existing.playListId
+        }
+        val uniqueSongs = songs.distinctBy { it.id }
+        insertSongs(uniqueSongs.map { it.toSongEntity(playlistId) })
+        forceReload(Playlists)
+        withContext(Main) {
+            context.showToast(
+                context.getString(
+                    R.string.added_song_count_to_playlist,
+                    uniqueSongs.size,
+                    playlistName
+                )
+            )
+        }
+        playlistId
+    }
+
     fun setFabMargin(context: Context, bottomMargin: Int) {
         val currentValue = DensityUtil.dip2px(context, 16F) +
                 bottomMargin
