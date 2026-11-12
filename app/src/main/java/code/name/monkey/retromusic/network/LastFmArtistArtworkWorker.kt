@@ -104,7 +104,7 @@ class LastFmArtistArtworkWorker(
     companion object {
         private const val PROGRESS_PREFERENCES = "lastfm_background_artwork"
         private const val PROCESSED_IDS = "processed_artist_ids"
-        private const val BATCH_SIZE = 8
+        private const val BATCH_SIZE = 4
         private const val ARTIST_REQUEST_INTERVAL_MS = 1100L
 
         // Also prevents the periodic worker and the one-time chain from
