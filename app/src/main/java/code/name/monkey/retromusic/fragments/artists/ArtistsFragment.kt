@@ -20,6 +20,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.lifecycle.lifecycleScope
 import code.name.monkey.retromusic.EXTRA_ARTIST_ID
 import code.name.monkey.retromusic.EXTRA_ARTIST_NAME
 import code.name.monkey.retromusic.R
@@ -33,9 +34,16 @@ import code.name.monkey.retromusic.helper.SortOrder.ArtistSortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumArtistClickListener
 import code.name.monkey.retromusic.interfaces.IArtistClickListener
 import code.name.monkey.retromusic.music.folders.FolderArtistRepository
+import code.name.monkey.retromusic.music.smartplaylist.SmartPlaylistEngine
+import code.name.monkey.retromusic.network.LastFMService
+import code.name.monkey.retromusic.extensions.showToast
 import code.name.monkey.retromusic.service.MusicService
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.koin.android.ext.android.get
 
 class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, GridLayoutManager>(),
     IArtistClickListener, IAlbumArtistClickListener {
@@ -83,7 +91,8 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
             dataSet,
             itemLayoutRes(),
             this,
-            this
+            this,
+            ::makeBestOf
         )
     }
 
@@ -130,6 +139,36 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
 
         fun newInstance(): ArtistsFragment {
             return ArtistsFragment()
+        }
+    }
+
+    private fun makeBestOf(artist: code.name.monkey.retromusic.model.Artist) {
+        val songs = artist.songs
+        if (songs.isEmpty()) {
+            requireContext().showToast(getString(R.string.smart_playlist_empty))
+            return
+        }
+        requireContext().showToast(getString(R.string.best_of_building, artist.name))
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    SmartPlaylistEngine.buildArtistBestOf(songs, artist.name, get<LastFMService>())
+                }
+            }
+            if (!isAdded) return@launch
+            val bestOf = result.getOrNull()
+            if (bestOf == null) {
+                requireContext().showToast(getString(R.string.smart_playlist_failed))
+            } else if (bestOf.isEmpty()) {
+                requireContext().showToast(getString(R.string.best_of_empty, artist.name))
+            } else {
+                libraryViewModel.addToPlaylist(
+                    requireContext(),
+                    getString(R.string.best_of_playlist_name, artist.name),
+                    bestOf
+                )
+                requireContext().showToast(getString(R.string.best_of_created, artist.name, bestOf.size))
+            }
         }
     }
 
