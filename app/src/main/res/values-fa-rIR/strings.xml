@@ -527,7 +527,7 @@
     <string name="lastfm_rebuild_summary">کتابخانه موسیقی را اسکن و تصاویر موجود هنرمندان را از Last.fm ذخیره می‌کند. تا پایان اسکن این صفحه را باز نگه دارید.</string>
     <string name="lastfm_rebuild_starting">آماده‌سازی اسکن آرشیو Last.fm… لطفاً این صفحه را باز نگه دارید.</string>
     <string name="lastfm_rebuild_progress">در حال بررسی هنرمند %1$d از %2$d… این صفحه را باز نگه دارید.</string>
-    <string name="lastfm_rebuild_complete">اسکن %1$d هنرمند تمام شد؛ تصویر %2$d هنرمند ذخیره شد.</string>
+    <string name="lastfm_rebuild_complete">اسکن %1$d هنرمند تمام شد؛ %2$d تصویر ذخیره شد؛ تصویر %3$d هنرمند پیدا نشد؛ ذخیره %4$d تصویر ناموفق بود.</string>
     <string name="lastfm_rebuild_failed">ارتباط با Last.fm برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید.</string>
     <string name="about_developer">توسعه‌دهنده: Behrouz Feiz</string>
     <string name="about_website">وب‌سایت: Branex.ir</string>
