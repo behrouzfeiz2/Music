@@ -25,7 +25,7 @@ android {
 
         applicationId = namespace
         versionCode = 10704
-        versionName = "7.0.4"
+        versionName = "0.2"
         buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"$spotifyClientId\"")
         buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"$spotifyClientSecret\"")
 
