@@ -36,7 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * @author Hemanth S (h4h13).
