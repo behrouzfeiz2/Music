@@ -134,9 +134,22 @@ object SpotifyCatalogApi {
             connection.setRequestProperty("Authorization", "Basic $basic")
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             connection.outputStream.use { it.write("grant_type=client_credentials".toByteArray(Charsets.UTF_8)) }
-            if (connection.responseCode !in 200..299) return null
-            val response = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+            val code = connection.responseCode
+            val stream = if (code in 200..299) connection.inputStream else connection.errorStream
+            val body = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
+            if (code !in 200..299) {
+                val error = runCatching {
+                    val json = JSONObject(body)
+                    json.optString("error_description").ifBlank { json.optString("error") }
+                }.getOrDefault("")
+                throw IllegalStateException(
+                    "Spotify token request failed (HTTP $code)" +
+                        if (error.isNotBlank()) ": ${error.take(160)}" else ""
+                )
+            }
+            val response = JSONObject(body)
             accessToken = response.optString("access_token").takeIf { it.isNotBlank() }
+                ?: throw IllegalStateException("Spotify token response did not contain an access token")
             tokenExpiresAt = now + response.optLong("expires_in", 3600L) * 1000L
             accessToken
         } catch (_: Exception) {
@@ -164,7 +177,18 @@ object SpotifyCatalogApi {
                 }
                 val stream = if (code in 200..299) connection.inputStream else connection.errorStream
                 val body = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
-                if (code !in 200..299) throw IllegalStateException("Spotify API returned HTTP $code")
+                if (code !in 200..299) {
+                    val error = runCatching {
+                        val json = JSONObject(body)
+                        val nested = json.optJSONObject("error")
+                        nested?.optString("message")?.takeIf { !it.isNullOrBlank() }
+                            ?: json.optString("error_description").ifBlank { json.optString("error") }
+                    }.getOrDefault("")
+                    throw IllegalStateException(
+                        "Spotify catalog request failed (HTTP $code)" +
+                            if (error.isNotBlank()) ": ${error.take(160)}" else ""
+                    )
+                }
                 return JSONObject(body)
             } finally {
                 connection.disconnect()
