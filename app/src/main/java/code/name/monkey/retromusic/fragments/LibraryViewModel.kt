@@ -286,13 +286,10 @@ class LibraryViewModel(
     }
 
     private suspend fun fetchPlayCountSongs() {
-        repository.playCountSongs().forEach { song ->
-            if (!File(song.data).exists() || song.id == -1L) {
-                repository.deleteSongInPlayCount(song)
-            }
-        }
-        playCountSongsData.postValue(repository.playCountSongs().map {
-            it.toSong()
+        // The playback service records plays in SongPlayCountStore (SQLite).
+        // Read from the same source so Most Played reflects actual playback history.
+        playCountSongsData.postValue(repository.topPlayedSongs().filter {
+            it.id != -1L && File(it.data).exists()
         })
     }
 
