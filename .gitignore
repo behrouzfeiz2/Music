@@ -41,3 +41,7 @@ app/normal/release/
 /app/release/
 
 .kotlin
+
+# Private APK signing material (never commit)
+retro.keystore
+retro.properties
