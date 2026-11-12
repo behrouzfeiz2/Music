@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.text.Normalizer
 import java.util.Locale
+import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -27,21 +28,40 @@ object SmartPlaylistEngine {
 
     suspend fun buildLastFmMix(
         localSongs: List<Song>,
+        artistFolders: List<File>,
         lastFm: LastFMService,
         maxSongs: Int = 50,
         apiKey: String = LastFMService.API_KEY
     ): List<Song> = coroutineScope {
-        // The selected folders may be artist folders, album folders, or a mix.
-        // Use the embedded artist metadata so every selected folder structure works.
-        val localArtists = localSongs
-            .groupBy { song ->
-                song.artistName.trim().ifBlank { song.albumArtist?.trim().orEmpty() }
+        // In this library layout, the selected directory is the artist and its
+        // child directories are albums. Audio tags are not reliable for artist identity.
+        val folders = artistFolders
+            .filter { it.isDirectory }
+            .map { runCatching { it.canonicalFile }.getOrDefault(it.absoluteFile) }
+            .distinctBy { it.path }
+            .sortedBy { it.path.length }
+            .fold(mutableListOf<File>()) { roots, folder ->
+                if (roots.none { root ->
+                        folder.path == root.path ||
+                            folder.path.startsWith(root.path + File.separator)
+                    }
+                ) roots.add(folder)
+                roots
             }
-            .filterKeys { it.isNotBlank() }
-            .entries
-            .sortedBy { it.key.lowercase(Locale.ROOT) }
 
-        if (localArtists.isEmpty()) return@coroutineScope emptyList()
+        val localArtists = folders.mapNotNull { folder ->
+            val folderPath = folder.path.trimEnd(File.separatorChar) + File.separator
+            val songs = localSongs.filter { song ->
+                val songPath = runCatching { File(song.data).canonicalPath }
+                    .getOrDefault(File(song.data).absolutePath)
+                songPath.startsWith(folderPath)
+            }
+            if (songs.isEmpty()) null else folder.name to songs
+        }.sortedBy { it.first.lowercase(Locale.ROOT) }
+
+        if (localArtists.isEmpty()) {
+            throw IllegalStateException("No audio files were found inside the selected artist folders")
+        }
 
         val semaphore = Semaphore(1)
         val successfulRequests = AtomicInteger(0)
@@ -49,15 +69,15 @@ object SmartPlaylistEngine {
             async {
                 semaphore.withPermit {
                     runCatching {
-                        val artistName = entry.key
+                        val artistName = entry.first
                         val response = lastFm.artistTopTracks(artistName, 100, apiKey)
-                        val matches = parseMatches(response, artistName, entry.value, index)
+                        val matches = parseMatches(response, artistName, entry.second, index)
                         successfulRequests.incrementAndGet()
                         matches
                     }.getOrDefault(emptyList())
                 }.also {
-                    // Keep requests comfortably below Last.fm rate limits.
-                    delay(400)
+                    // One request at a time, with a conservative interval.
+                    delay(1100)
                 }
             }
         }.awaitAll().flatten()
