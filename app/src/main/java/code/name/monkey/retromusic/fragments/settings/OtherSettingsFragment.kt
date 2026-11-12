@@ -78,7 +78,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
             preference.summary = getString(R.string.spotify_rebuild_starting)
             viewLifecycleOwner.lifecycleScope.launch {
                 val artists = withContext(Dispatchers.IO) { libraryViewModel.getArtistsForSpotifyRebuild() }
-                    .distinctBy { it.name.trim().lowercase() }
+                    .distinctBy { it.id }
                     .filter { it.name.isNotBlank() && it.name != "Unknown Artist" && it.name != "Various Artists" }
                 var saved = 0
                 var checked = 0
