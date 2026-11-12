@@ -32,6 +32,7 @@ import code.name.monkey.retromusic.fragments.base.AbsRecyclerViewCustomGridSizeF
 import code.name.monkey.retromusic.helper.SortOrder.PlaylistSortOrder
 import code.name.monkey.retromusic.interfaces.IPlaylistClickListener
 import code.name.monkey.retromusic.music.smartplaylist.SmartPlaylistEngine
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.LastFMService
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
@@ -39,6 +40,7 @@ import com.google.android.material.transition.MaterialSharedAxis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import org.koin.android.ext.android.get
 
 class PlaylistsFragment :
@@ -263,7 +265,14 @@ class PlaylistsFragment :
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    SmartPlaylistEngine.buildLastFmMix(localSongs, get<LastFMService>())
+                    val artistFolders = localSongs.mapNotNull { song ->
+                        FolderArtistRepository.folderPathForSong(song.data)
+                    }.distinct().map(::File)
+                    SmartPlaylistEngine.buildLastFmMix(
+                        localSongs,
+                        artistFolders,
+                        get<LastFMService>()
+                    )
                 }
             }
             if (result.isFailure) {
