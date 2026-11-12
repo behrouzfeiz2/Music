@@ -193,7 +193,7 @@ class AlbumTagEditorActivity : AbsTagEditorActivity<ActivityAlbumTagEditorBindin
         selectedSongs?.let { return it }
 
         val selectedIds = intent.getLongArrayExtra(EXTRA_SONG_IDS)
-        val songs = if (!selectedIds.isNullOrEmpty()) {
+        val songs = if (selectedIds != null && selectedIds.isNotEmpty()) {
             selectedIds.map { songRepository.song(it) }
                 .filter { it.id > 0L && it.data.isNotBlank() }
         } else {
