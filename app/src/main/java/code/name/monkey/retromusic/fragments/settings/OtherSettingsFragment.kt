@@ -103,7 +103,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                     val semaphore = kotlinx.coroutines.sync.Semaphore(4)
                     kotlinx.coroutines.coroutineScope {
                         artists.map { artist ->
-                            kotlinx.coroutines.async(Dispatchers.IO) {
+                            async(Dispatchers.IO) {
                                 semaphore.withPermit {
                                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                                     val imageUrl = SpotifyCatalogApi.findArtistImage(artist.name)
