@@ -25,7 +25,7 @@ object SpotifyCatalogApi {
                 return@withContext null
             }
             val token = getAccessToken() ?: return@withContext null
-            val query = Uri.encode("artist:\\"$name\\"")
+            val query = Uri.encode("artist:\"$name\"")
             val response = getJson("https://api.spotify.com/v1/search?q=$query&type=artist&limit=5", token)
             val items = response.optJSONObject("artists")?.optJSONArray("items")
                 ?: return@withContext null
