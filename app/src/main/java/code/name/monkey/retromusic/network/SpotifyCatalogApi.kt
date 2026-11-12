@@ -47,7 +47,7 @@ object SpotifyCatalogApi {
 
     suspend fun findArtist(name: String): SpotifyArtistProfile? =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            if (BuildConfig.SPOTIFY_CLIENT_ID.isBlank() || BuildConfig.SPOTIFY_CLIENT_SECRET.isBlank()) {
+            if (getCredentials().let { it.first.isBlank() || it.second.isBlank() }) {
                 return@withContext null
             }
             val token = getAccessToken() ?: return@withContext null
