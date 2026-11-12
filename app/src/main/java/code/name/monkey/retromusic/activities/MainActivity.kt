@@ -39,6 +39,8 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
 class MainActivity : AbsCastActivity() {
+    private var wasPlayingBeforeOnline = false
+    private var onlineModeActive = false
     companion object {
         const val TAG = "MainActivity"
         const val EXPAND_PANEL = "expand_panel"
@@ -91,8 +93,21 @@ class MainActivity : AbsCastActivity() {
             if (destination.id == navGraph.startDestinationId) {
                 currentFragment(R.id.fragment_container)?.enterTransition = null
             }
+            if (destination.id == R.id.action_online) {
+                if (!onlineModeActive) {
+                    wasPlayingBeforeOnline = MusicPlayerRemote.isPlaying
+                    if (wasPlayingBeforeOnline) MusicPlayerRemote.pauseSong()
+                    onlineModeActive = true
+                }
+                setOnlineMode(true)
+            } else if (onlineModeActive) {
+                setOnlineMode(false)
+                onlineModeActive = false
+                if (wasPlayingBeforeOnline) MusicPlayerRemote.resumePlaying()
+                wasPlayingBeforeOnline = false
+            }
             when (destination.id) {
-                R.id.action_home, R.id.action_song, R.id.action_album, R.id.action_artist, R.id.action_folder, R.id.action_playlist, R.id.action_genre, R.id.action_search -> {
+                R.id.action_home, R.id.action_song, R.id.action_album, R.id.action_artist, R.id.action_folder, R.id.action_playlist, R.id.action_genre, R.id.action_search, R.id.action_online -> {
                     // Save the last tab
                     if (PreferenceUtil.rememberLastTab) {
                         saveTab(destination.id)
