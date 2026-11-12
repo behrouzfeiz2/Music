@@ -18,7 +18,6 @@ import android.content.Intent
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.*
 import android.webkit.MimeTypeMap
 import android.widget.Toast
@@ -66,8 +65,6 @@ import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
 import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.music.smartplaylist.BestOfSelectionHelper
-import code.name.monkey.retromusic.music.smartplaylist.DailyMixHelper
 import code.name.monkey.retromusic.music.smartplaylist.FolderSongSelector
 import code.name.monkey.retromusic.activities.tageditor.SongTagEditorActivity
 import code.name.monkey.retromusic.providers.BlacklistStore
@@ -413,56 +410,6 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
 
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {
         val itemId = item.itemId
-        val isBestOf = itemId == R.id.action_best_of_selection
-        val isDailyMix = itemId == R.id.action_create_daily_mix
-
-        if (isBestOf || isDailyMix) {
-            val selectedFolders = files.filter { it.isDirectory }
-            if (selectedFolders.isEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.best_of_selection_folders_only),
-                    Toast.LENGTH_LONG
-                ).show()
-                return
-            }
-
-            val appContext = requireContext().applicationContext
-            Toast.makeText(
-                requireContext(),
-                if (isDailyMix) getString(R.string.daily_mix_building)
-                else getString(R.string.best_of_selection_building),
-                Toast.LENGTH_LONG
-            ).show()
-
-            lifecycleScope.launch {
-                try {
-                    val result = withContext(Dispatchers.IO) {
-                        if (isBestOf) {
-                            BestOfSelectionHelper.createPlaylist(appContext, selectedFolders)
-                        } else {
-                            DailyMixHelper.createPlaylist(appContext, selectedFolders)
-                        }
-                    }
-                    libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.HomeSections)
-                    libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.Playlists)
-                    val message = if (isDailyMix) {
-                        getString(R.string.daily_mix_created, result.second, result.first)
-                    } else {
-                        getString(R.string.best_of_selection_created, result.second, result.first)
-                    }
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                } catch (error: Exception) {
-                    Log.e(TAG, "Failed to create smart playlist from selected folders", error)
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.smart_playlist_failed),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            return
-        }
 
         if (itemId == R.id.action_tag_editor) {
             lifecycleScope.launch {

@@ -38,15 +38,7 @@
         android:title="@string/action_delete_from_device"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/action_best_of_selection"
-        android:title="@string/best_of_selection"
-        app:showAsAction="never" />
 
-    <item
-        android:id="@+id/action_create_daily_mix"
-        android:title="@string/create_daily_mix"
-        app:showAsAction="never" />
 
     <item
         android:id="@id/action_multi_select_adapter_check_all"

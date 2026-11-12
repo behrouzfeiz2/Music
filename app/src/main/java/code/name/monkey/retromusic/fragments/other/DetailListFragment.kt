@@ -40,6 +40,7 @@ import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.interfaces.IArtistClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.util.RetroUtil
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.snackbar.Snackbar
@@ -221,6 +222,21 @@ class DetailListFragment : AbsMainActivityFragment(R.layout.fragment_playlist_de
 
 
     override fun onArtist(artistId: Long, view: View) {
+        if (args.type == TOP_ARTISTS) {
+            val artist = (binding.recyclerView.adapter as? ArtistAdapter)
+                ?.dataSet
+                ?.firstOrNull { it.id == artistId }
+            val folderPath = artist?.songs?.firstOrNull()?.data
+                ?.let { FolderArtistRepository.folderPathForSong(it) }
+            if (folderPath != null) {
+                val folderKey = FolderArtistRepository.keyForFolder(folderPath)
+                findNavController().navigate(
+                    R.id.albumArtistDetailsFragment,
+                    bundleOf(EXTRA_ARTIST_NAME to folderKey)
+                )
+                return
+            }
+        }
         findNavController().navigate(
             R.id.artistDetailsFragment,
             bundleOf(EXTRA_ARTIST_ID to artistId),

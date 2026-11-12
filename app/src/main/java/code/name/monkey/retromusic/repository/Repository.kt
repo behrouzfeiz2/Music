@@ -21,6 +21,7 @@ import code.name.monkey.retromusic.*
 import code.name.monkey.retromusic.db.*
 import code.name.monkey.retromusic.fragments.search.Filter
 import code.name.monkey.retromusic.model.*
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.model.smartplaylist.NotPlayedPlaylist
 import code.name.monkey.retromusic.network.LastFMService
 import code.name.monkey.retromusic.network.Result
@@ -155,7 +156,28 @@ class RealRepository(
 
     override suspend fun recentAlbums(): List<Album> = lastAddedRepository.recentAlbums()
 
-    override suspend fun topArtists(): List<Artist> = topPlayedRepository.topArtists()
+    override suspend fun topArtists(): List<Artist> {
+        val songs = allSongs()
+        if (songs.isEmpty()) return emptyList()
+
+        val songsById = songs.associateBy { it.id }
+        val rankedFolders = playCountSongs()
+            .mapNotNull { playCount ->
+                val song = songsById[playCount.id] ?: return@mapNotNull null
+                val folderPath = FolderArtistRepository.folderPathForSong(song.data)
+                    ?: return@mapNotNull null
+                folderPath to playCount.playCount
+            }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, counts) -> counts.sum() }
+            .entries
+            .sortedByDescending { it.value }
+
+        return rankedFolders.mapNotNull { (folderPath, _) ->
+            FolderArtistRepository.artistForFolder(songs, folderPath)
+                .takeIf { it.albums.isNotEmpty() }
+        }
+    }
 
     override suspend fun topAlbums(): List<Album> = topPlayedRepository.topAlbums()
 
@@ -210,15 +232,7 @@ class RealRepository(
             topAlbumsHome(),
             recentArtistsHome(),
             recentAlbumsHome(),
-            favoritePlaylistHome(),
-            Home(
-                arrayList = fetchPlaylistWithSongs().filter {
-                    it.playlistEntity.playlistName.startsWith("Daily Mix", ignoreCase = true) &&
-                        it.songs.isNotEmpty()
-                },
-                homeSection = DAILY_MIXES,
-                titleRes = R.string.daily_mix
-            )
+            favoritePlaylistHome()
         )
         for (section in sections) {
             if (section.arrayList.isNotEmpty()) {
@@ -352,7 +366,7 @@ class RealRepository(
     }
 
     override suspend fun topArtistsHome(): Home {
-        val artists = topPlayedRepository.topArtists().take(5)
+        val artists = topArtists().take(5)
         return Home(artists, TOP_ARTISTS, R.string.top_artists)
     }
 

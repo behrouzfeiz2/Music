@@ -30,7 +30,6 @@ import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.*
 import code.name.monkey.retromusic.adapter.album.AlbumAdapter
 import code.name.monkey.retromusic.adapter.artist.ArtistAdapter
-import code.name.monkey.retromusic.adapter.playlist.PlaylistAdapter
 import code.name.monkey.retromusic.adapter.song.SongAdapter
 import code.name.monkey.retromusic.fragments.home.HomeFragment
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
@@ -40,8 +39,8 @@ import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.model.Home
 import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.db.PlaylistWithSongs
 import code.name.monkey.retromusic.util.PreferenceUtil
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 
 class HomeAdapter(private val activity: AppCompatActivity) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(), IArtistClickListener, IAlbumClickListener, IPlaylistClickListener {
@@ -58,7 +57,6 @@ class HomeAdapter(private val activity: AppCompatActivity) :
         return when (viewType) {
             RECENT_ARTISTS, TOP_ARTISTS -> ArtistViewHolder(layout)
             FAVOURITES -> PlaylistViewHolder(layout)
-            DAILY_MIXES -> DailyMixViewHolder(layout)
             TOP_ALBUMS, RECENT_ALBUMS -> AlbumViewHolder(layout)
             else -> {
                 ArtistViewHolder(layout)
@@ -124,7 +122,6 @@ class HomeAdapter(private val activity: AppCompatActivity) :
                     )
                 }
             }
-            DAILY_MIXES -> (holder as DailyMixViewHolder).bindView(home)
         }
     }
 
@@ -176,22 +173,6 @@ class HomeAdapter(private val activity: AppCompatActivity) :
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private inner class DailyMixViewHolder(view: View) : AbsHomeViewItem(view) {
-        fun bindView(home: Home) {
-            title.setText(home.titleRes)
-            recyclerView.apply {
-                layoutManager = linearLayoutManager()
-                adapter = PlaylistAdapter(
-                    activity,
-                    home.arrayList as List<PlaylistWithSongs>,
-                    R.layout.item_daily_mix,
-                    this@HomeAdapter
-                )
-            }
-        }
-    }
-
     open class AbsHomeViewItem(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val recyclerView: RecyclerView = itemView.findViewById(R.id.recyclerView)
         val title: AppCompatTextView = itemView.findViewById(R.id.title)
@@ -211,13 +192,25 @@ class HomeAdapter(private val activity: AppCompatActivity) :
         LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
 
     override fun onArtist(artistId: Long, view: View) {
+        val topArtist = list.firstOrNull { it.homeSection == TOP_ARTISTS }
+            ?.arrayList
+            ?.filterIsInstance<Artist>()
+            ?.firstOrNull { it.id == artistId }
+        val folderPath = topArtist?.songs?.firstOrNull()?.data
+            ?.let { FolderArtistRepository.folderPathForSong(it) }
+        if (folderPath != null) {
+            val folderKey = FolderArtistRepository.keyForFolder(folderPath)
+            activity.findNavController(R.id.fragment_container).navigate(
+                R.id.albumArtistDetailsFragment,
+                bundleOf(EXTRA_ARTIST_NAME to folderKey)
+            )
+            return
+        }
         activity.findNavController(R.id.fragment_container).navigate(
             R.id.artistDetailsFragment,
             bundleOf(EXTRA_ARTIST_ID to artistId),
             null,
-            FragmentNavigatorExtras(
-                view to artistId.toString()
-            )
+            FragmentNavigatorExtras(view to artistId.toString())
         )
     }
 

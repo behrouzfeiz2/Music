@@ -30,23 +30,6 @@
             tools:ignore="ContentDescription"
             tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/dailyMixLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:layout_margin="10dp"
-            android:background="#99000000"
-            android:paddingStart="10dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="5dp"
-            android:text="@string/daily_mix_label"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
@@ -55,26 +38,30 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="vertical"
-        android:padding="12dp"
-        app:layout_constraintEnd_toStartOf="@id/menu"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageContainer">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:singleLine="true"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
             android:textAppearance="@style/TextViewSubtitle1"
             android:textStyle="bold"
             tools:text="@tools:sample/full_names" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
             android:paddingTop="4dp"
-            android:singleLine="true"
             tools:text="@tools:sample/full_names" />
     </LinearLayout>
 
@@ -83,9 +70,7 @@
         style="@style/OverFlowButton"
         android:layout_gravity="center_vertical"
         android:layout_weight="0"
-        app:layout_constraintBottom_toBottomOf="@id/titleContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/titleContainer"
-        app:layout_constraintTop_toTopOf="@id/titleContainer"
+        app:layout_constraintEnd_toEndOf="@id/imageContainer"
+        app:layout_constraintTop_toTopOf="@id/imageContainer"
         app:tint="?attr/colorControlNormal" />
 </androidx.constraintlayout.widget.ConstraintLayout>
