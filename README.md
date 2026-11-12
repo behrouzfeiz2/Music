@@ -1,149 +1,64 @@
 <p align="center">
-  <a href="https://retromusic.app">
-    <img src="app\src\main\ic_launcher-web.png" height="128">
-    <h1 align="center">Retro Music Player 🎵</h1>
-  </a>
-</p>
-<p align="center">
-  <a href="https://github.com/RetroMusicPlayer/RetroMusicPlayer" style="text-decoration:none" area-label="Android">
-    <img src="https://img.shields.io/badge/Platform-Android-green.svg">
-  </a>
-  <a href="https://github.com/RetroMusicPlayer/RetroMusicPlayer/actions/workflows/android.yml" style="text-decoration:none" area-label="Build Status">
-    <img src="https://github.com/RetroMusicPlayer/RetroMusicPlayer/actions/workflows/android.yml/badge.svg">
-  </a>
-  <a href="https://github.com/RetroMusicPlayer/RetroMusicPlayer" style="text-decoration:none" area-label="Min API: 21">
-    <img src="https://img.shields.io/badge/minSdkVersion-21-green.svg">
-  </a>
-  <a href="https://play.google.com/store/apps/details?id=code.name.monkey.retromusic" style="text-decoration:none" area-label="Play Store">
-    <img src="https://img.shields.io/badge/Download-Google_Play-green.svg">
-  </a>
-  <a href="https://github.com/RetroMusicPlayer/RetroMusicPlayer/blob/master/LICENSE.md" style="text-decoration:none" area-label="License: GPL v3">
-    <img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg">
-  </a>
-  <a href="https://twitter.com/retromusicapp" style="text-decoration:none" area-label="Twitter Follow">
-    <img src="https://img.shields.io/twitter/follow/retromusicapp?style=social">
-  </a>
-  <a href="https://crowdin.com/project/retromusicplayer" style="text-decoration:none" area-label="Crowdin">
-    <img src="https://badges.crowdin.net/retromusicplayer/localized.svg">
-  </a>
-
+  <img src="app/src/main/ic_launcher-web.png" height="120" alt="نشان Music">
 </p>
 
-___
-# We're looking for more contributors and maintainers!
-# If you'd like to be a maintainer, please DM us on [Telegram](https://telegram.me/Daksh777) or [Twitter](https://twitter.com/0xDPJ)
-# All contributions are welcome!
-___
+# Music | موزیک
 
-## 🆕 Material You Design Music Player for Android music lovers 
+**پخش‌کننده موسیقی اندروید برای مدیریت و شنیدن آرشیوهای بزرگ موسیقی شخصی**
 
-## Download
-| Play Store | F-Droid | Obtanium |
-|:-:|:-:|:-:|
-| [<img src="assets/google-play-badge.png" height="80">](https://play.google.com/store/apps/details?id=code.name.monkey.retromusic) | [<img src="https://f-droid.org/badge/get-it-on.png" height="80">](https://f-droid.org/en/packages/code.name.monkey.retromusic/) | <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/{%22id%22:%22code.name.monkey.retromusic%22,%22url%22:%22https://github.com/RetroMusicPlayer/RetroMusicPlayer%22,%22author%22:%22RetroMusicPlayer%22,%22name%22:%22Retro Music Player%22}"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/b1c8ac6f2ab08497189721a788a5763e28ff64cd/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="80"></a>
- |
+Music یک پخش‌کننده موسیقی محلی برای اندروید است که با تمرکز بر مجموعه‌های بزرگ و مرتب‌شده موسیقی طراحی و توسعه داده می‌شود. هدف پروژه این است که کاربر بتواند آرشیو شخصی خود را بر اساس پوشه‌های هنرمند و آلبوم مدیریت کند، بدون آن‌که آهنگ‌های چند آلبوم با هم مخلوط شوند.
 
-or get it from the [GitHub Releases](https://github.com/RetroMusicPlayer/RetroMusicPlayer/releases).
+> نسخه **0.1**، نسخه اولیه پروژه است و توسعه آن ادامه دارد.
 
-## ⚠ Join [@retromusiclog](https://telegram.me/retromusiclog) on Telegram for important updates.
-___
+## امکانات
 
-## 📱 Screenshots
-### App Themes
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="200"/> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="200"/> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200"/> |
-|:---:|:---:|:---:|
-|Clearly white| Kinda dark | Just black|
+- **کتابخانه محلی موسیقی:** شناسایی و نمایش آهنگ‌های ذخیره‌شده روی حافظه دستگاه.
+- **ساختار هنرمند و آلبوم بر اساس پوشه‌ها:** پوشه‌های سطح اول به‌عنوان هنرمند و پوشه‌های سطح دوم به‌عنوان آلبوم شناخته می‌شوند.
+- **پشتیبانی از تک‌آهنگ‌ها:** فایل‌هایی که مستقیماً داخل پوشه هنرمند قرار دارند، در بخش Singles نمایش داده می‌شوند.
+- **نمای اختصاصی هنرمند:** نمایش اطلاعات هنرمند، آلبوم‌ها و آهنگ‌های مرتبط با آرشیو محلی.
+- **Spotify Connect:** دریافت تصویر و اطلاعات هنرمندان و آلبوم‌ها از Spotify با واردکردن Client ID و Client Secret در تنظیمات برنامه.
+- **ساخت پلی‌لیست هوشمند:** پیشنهاد آهنگ‌های محبوب هنرمند از Last.fm و تطبیق آن‌ها با آهنگ‌های موجود در دستگاه؛ این قابلیت آهنگ جدیدی دانلود نمی‌کند.
+- **Best Of هنرمند:** ساخت فهرست پخش از بهترین آهنگ‌های هنرمند که در آرشیو محلی کاربر موجود هستند.
+- پخش موسیقی، صف پخش و امکانات معمول یک موزیک‌پلیر اندرویدی.
 
-### Player screen
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="200"/>| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="200"/>| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="200"/>| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" width="200"/>| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" width="200"/>|
-|:---:|:---:|:---:|:---:|:---:|
-| Home | Songs | Albums | Artists | Settings |
+## مناسب چه کسانی است؟
 
-### Synced lyrics screen (Over Cover)
-| <img src="screenshots/synced_over_light.jpg" width="200"/>| <img src="screenshots/synced_over_dark.jpg" width="200"/>| <img src="screenshots/synced_over_black.jpg" width="200"/>|
-|:---:|:---:|:---:|
-| Synced Over Cover light | Synced Over Cover dark | Synced Over Cover black |
+اگر آرشیو شخصی بزرگی از موسیقی دارید و آهنگ‌ها را در پوشه‌هایی مانند نمونه زیر نگهداری می‌کنید، Music برای مدیریت و مرور چنین مجموعه‌ای ساخته شده است:
 
-### Synced lyrics screen (Replace Cover)
-| <img src="screenshots/synced_replace_light.jpg" width="200"/>| <img src="screenshots/synced_replace_dark.jpg" width="200"/>| <img src="screenshots/synced_replace_black.jpg" width="200"/>|
-|:---:|:---:|:---:|
-| Synced Replace Cover light | Synced Replace Cover dark | Synced Replace Cover black |
+```text
+Music/
+├── Linkin Park/
+│   ├── Hybrid Theory/
+│   │   ├── Papercut.mp3
+│   │   └── In the End.mp3
+│   ├── Meteora/
+│   │   ├── Somewhere I Belong.mp3
+│   │   └── Numb.mp3
+│   └── Single Track.mp3
+├── Adele/
+│   ├── 21/
+│   └── 25/
+└── Daft Punk/
+    └── Discovery/
+```
 
-### 10+ Now playing themes
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200"/>	|<img src="screenshots/fit.jpg" width="200"/>|   <img src="screenshots/flat.jpg" width="200"/>  	|    <img src="screenshots/color.jpg" width="200"/> 	|     <img src="screenshots/material.jpg" width="200"/>	|
-|:-----:	|:-----:	|:-----:	|:-----:	|:-----:	|
-| Normal 	| Fit 	| Flat 	| Color 	| Material 	|
+در این ساختار، نام پوشه‌ها مبنای دسته‌بندی هنرمند و آلبوم قرار می‌گیرد؛ بنابراین لازم نیست برای مرتب‌بودن کتابخانه فقط به تگ‌های فایل‌های صوتی متکی باشید.
 
-| <img src="screenshots/classic.jpg" width="200"/>	|<img src="screenshots/adaptive.jpg" width="200"/>|   <img src="screenshots/blur.jpg" width="200"/>  	|    <img src="screenshots/tiny.jpg" width="200"/> 	|     <img src="screenshots/peek.jpg" width="200"/>	|
-|:-----:	|:-----:	|:-----:	|:-----:	|:-----:	|
-| Classic 	| Adaptive 	| Blur 	| Tiny 	| Peek 	|
+## راه‌اندازی Spotify
 
-___
+برای استفاده از اطلاعات Spotify، در برنامه به مسیر **Settings → Spotify Connect** بروید و دو مقدار Client ID و Client Secret را وارد کنید. این اطلاعات از [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) دریافت می‌شوند.
 
-## 🧭 Navigation never been made easier 
-Self-explanatory interface without overloaded menus.
+## دریافت نسخه
 
-## 🎨 Colorful
-You can choose between three different main themes: Clearly White, Kinda
-Dark and Just Black for AMOLED displays. Select your favorite accent
-color from a color palette.
+نسخه‌های منتشرشده از بخش [Releases](https://github.com/behrouzfeiz2/RetroMusicPlayer/releases) قابل دریافت خواهند بود. وضعیت ساخت خودکار برنامه را نیز می‌توانید در [GitHub Actions](https://github.com/behrouzfeiz2/RetroMusicPlayer/actions) ببینید.
 
-## 🏠 Home
-Where you can view your recently/top played artists, albums and
-favorite songs. No other music player has this feature.
+## سازنده و توسعه‌دهنده
 
-## 📦 Included Features
--  Base 3 themes (Clearly White, Kinda Dark and Just Black)
--  Chromecast support
--  Choose from 10+ now playing themes
--  Driving Mode
--  Headset/Bluetooth support
--  Music duration filter
--  Android Auto support
--  Wallpaper accent picker on Android 8.1+
--  Material You support on Android 12+
--  Monet themed icon support on Android 13+
--  Folder support - Play songs by folder
--  Gapless playback
--  Volume controls
--  Carousel effect for album covers
--  Home screen widgets
--  Lock screen playback controls
--  Lyrics screen (download and sync with music)
--  Sleep timer
--  Easy drag to sort playlist & play queue
--  Tag editor
--  Create, edit and import playlists
--  Playing queue with reorder
--  User profile
--  30+ languages support (help translate the project: [Crowdin](https://crowdin.com/project/retromusicplayer)
--  Browse and play your music by songs, albums, artists, playlists and
-  genre
--  Smart Auto Playlists - Recently played, most played and history
--  Build your playlist on the go
+**بهروز فیض — [Branex.ir](https://branex.ir)**
 
-We are trying our best to bring you the best user experience. The app is regularly updated for bug fixes and new features.
+طراحی، توسعه و سفارشی‌سازی این نسخه توسط تیم Branex و با مدیریت بهروز فیض انجام می‌شود.
 
-___
+## مجوز و پروژه پایه
 
+این پروژه بر پایه [Retro Music Player](https://github.com/RetroMusicPlayer/RetroMusicPlayer) توسعه یافته است. حقوق و مجوز کد پایه مطابق **GNU General Public License v3.0** حفظ می‌شود. لطفاً فایل [LICENSE.md](LICENSE.md) را مطالعه کنید.
 
-## ❓ FAQ
-Please read the FAQ [here](https://retromusic.app/faq.html)
-
-In any case, if you find or notice any bugs please report them by creating an issue or by contacting us in the [Telegram help & feedback group](https://t.me/retromusicapp).
-If you have any feature suggestions, please create an issue with detailed information or by contacting us in the [Telegram suggestions group](https://t.me/retro_music_suggestion).
-
-## 🔗 Social links
-**Telegram:** https://t.me/retromusicapp <br>
-**Crowdin**: https://crowdin.com/project/retromusicplayer <br>
-**Pinterest:** https://pinterest.com/retromusicapp <br>
-**Twitter:** https://twitter.com/retromusicapp <br>
-
-## 🗂️ License
-
-Retro Music Player is released under the GNU General Public License v3.0
-(GPLv3), which can be found [here](LICENSE.md)
-
-
->Please note: Retro Music Player is a local music player app. It
->doesn't support music downloading or online music streaming.
