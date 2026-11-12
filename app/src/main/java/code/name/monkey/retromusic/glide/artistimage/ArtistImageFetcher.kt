@@ -4,6 +4,7 @@ import android.content.Context
 import code.name.monkey.retromusic.model.Data
 import code.name.monkey.retromusic.model.DeezerResponse
 import code.name.monkey.retromusic.network.DeezerService
+import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.Priority
@@ -16,6 +17,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.FileNotFoundException
+import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 
@@ -36,11 +38,20 @@ class ArtistImageFetcher(
     }
 
     override fun getDataSource(): DataSource {
-        return DataSource.REMOTE
+        return if (CustomArtistImageUtil.getLastFmFile(model.artist).isFile) {
+            DataSource.LOCAL
+        } else {
+            DataSource.REMOTE
+        }
     }
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
         try {
+            val cachedArtistImage = CustomArtistImageUtil.getLastFmFile(model.artist)
+            if (cachedArtistImage.isFile) {
+                callback.onDataReady(FileInputStream(cachedArtistImage))
+                return
+            }
             if (!MusicUtil.isArtistNameUnknown(model.artist.name) &&
                 PreferenceUtil.isAllowedToDownloadMetadata(context)
             ) {
