@@ -101,7 +101,7 @@ object FolderArtistRepository {
      * Prefer embedded track numbers; fall back to a leading number in the file name,
      * then use the file name as a stable natural-ish tie breaker.
      */
-    private fun sortTracksByFolderOrder(songs: List<Song>): List<Song> {
+    fun sortTracksByFolderOrder(songs: List<Song>): List<Song> {
         fun fileNumber(song: Song): Int {
             val match = Regex("^\\s*(\\d+)").find(File(song.data).name)
             return match?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Int.MAX_VALUE
@@ -109,8 +109,8 @@ object FolderArtistRepository {
         return songs.sortedWith(
             compareBy<Song> { song ->
                 when {
-                    song.trackNumber > 0 -> song.trackNumber
                     fileNumber(song) != Int.MAX_VALUE -> fileNumber(song)
+                    song.trackNumber > 0 -> song.trackNumber
                     else -> Int.MAX_VALUE
                 }
             }.thenBy { File(it.data).name.lowercase(Locale.ROOT) }
