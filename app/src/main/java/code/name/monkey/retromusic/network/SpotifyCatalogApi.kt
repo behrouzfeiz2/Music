@@ -6,6 +6,7 @@ import code.name.monkey.retromusic.BuildConfig
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 data class SpotifyTrack(val name: String, val album: String, val durationMs: Long, val popularity: Int, val spotifyUrl: String)
 data class SpotifyAlbum(val name: String, val releaseDate: String, val imageUrl: String?, val spotifyUrl: String)
@@ -15,7 +16,7 @@ data class SpotifyArtistProfile(val name: String, val imageUrl: String?, val spo
 object SpotifyCatalogApi {
     private var accessToken: String? = null
     private var tokenExpiresAt: Long = 0L
-    private val artistImageCache = mutableMapOf<String, String>()
+    private val artistImageCache = ConcurrentHashMap<String, String>()
 
     suspend fun findArtistImage(name: String): String? =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
