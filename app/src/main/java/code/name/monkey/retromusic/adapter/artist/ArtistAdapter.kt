@@ -156,9 +156,9 @@ class ArtistAdapter(
 
     private fun loadFolderCollage(artist: Artist, holder: ViewHolder) {
         val imageView = holder.image ?: return
+        imageView.tag = artist.id
         val albums = artist.albums.take(3)
         if (albums.size < 2) return
-        imageView.tag = artist.id
         coverExecutor.execute {
             val bitmaps = albums.mapNotNull { album ->
                 val song = album.safeGetFirstSong()
