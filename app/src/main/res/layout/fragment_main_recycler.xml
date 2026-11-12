@@ -26,6 +26,16 @@
         android:fitsSystemWindows="true"
         android:theme="@style/CenteredCheckBoxTheme" />
 
+    <ProgressBar
+        android:id="@+id/spotifyArtistsProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:indeterminate="false"
+        android:visibility="gone"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom" />
+
     <LinearLayout
         android:id="@android:id/empty"
         android:layout_width="wrap_content"
