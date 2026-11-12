@@ -38,6 +38,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_create_daily_mix"
+        android:title="@string/create_daily_mix"
+        app:showAsAction="never" />
+
+    <item
         android:id="@id/action_multi_select_adapter_check_all"
         android:icon="@drawable/ic_select_all"
         android:title="@string/select_all"
