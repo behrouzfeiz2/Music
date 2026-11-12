@@ -56,7 +56,7 @@
                 app:layout_constraintDimensionRatio="16:9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/spotifyLoading">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/image"
@@ -97,17 +97,6 @@
                 app:layout_constraintTop_toBottomOf="@id/artistTitle"
                 tools:text="@tools:sample/full_names" />
 
-            <LinearLayout
-                android:id="@+id/spotifyCatalog"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingTop="12dp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/text" />
-
             <include
                 android:id="@+id/fragment_artist_content"
                 layout="@layout/fragment_artist_content"
@@ -116,7 +105,7 @@
                 android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/spotifyCatalog" />
+                app:layout_constraintTop_toBottomOf="@+id/text" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
