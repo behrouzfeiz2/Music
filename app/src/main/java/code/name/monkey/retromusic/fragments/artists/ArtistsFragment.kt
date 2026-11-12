@@ -57,18 +57,25 @@ import org.koin.android.ext.android.get
 class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, GridLayoutManager>(),
     IArtistClickListener, IAlbumArtistClickListener {
     private var spotifyCoversJob: Job? = null
+    private var artistBuildJob: Job? = null
     private var spotifyProgressBar: ProgressBar? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         spotifyProgressBar = view.findViewById(R.id.spotifyArtistsProgress)
-        libraryViewModel.getSongs().observe(viewLifecycleOwner) {
-            val artists = FolderArtistRepository.artists(it)
-            adapter?.apply {
-                swapDataSet(artists)
-                albumArtistsOnly = false
+        libraryViewModel.getSongs().observe(viewLifecycleOwner) { songs ->
+            artistBuildJob?.cancel()
+            artistBuildJob = viewLifecycleOwner.lifecycleScope.launch {
+                val artists = withContext(Dispatchers.Default) {
+                    FolderArtistRepository.artists(songs)
+                }
+                if (!isAdded) return@launch
+                adapter?.apply {
+                    swapDataSet(artists)
+                    albumArtistsOnly = false
+                }
+                loadSpotifyArtistCovers(artists)
             }
-            loadSpotifyArtistCovers(artists)
         }
     }
 
@@ -119,6 +126,8 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
     override fun onDestroyView() {
         spotifyCoversJob?.cancel()
         spotifyCoversJob = null
+        artistBuildJob?.cancel()
+        artistBuildJob = null
         spotifyProgressBar = null
         super.onDestroyView()
     }
