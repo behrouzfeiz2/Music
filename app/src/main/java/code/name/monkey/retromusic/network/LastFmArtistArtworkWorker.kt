@@ -37,7 +37,7 @@ class LastFmArtistArtworkWorker(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            return@withLock androidx.work.ListenableWorker.Result.retry()
+            return@withLock androidx.work.ListenableWorker.androidx.work.ListenableWorker.Result.retry()
         }
 
         val preferences = applicationContext.getSharedPreferences(
@@ -52,11 +52,11 @@ class LastFmArtistArtworkWorker(
             .take(BATCH_SIZE)
             .toList()
 
-        if (pending.isEmpty()) return@withLock androidx.work.ListenableWorker.Result.success()
+        if (pending.isEmpty()) return@withLock androidx.work.ListenableWorker.androidx.work.ListenableWorker.Result.success()
 
         val imageUtil = CustomArtistImageUtil.getInstance(applicationContext)
         pending.forEachIndexed { index, artist ->
-            if (isStopped) return@withLock Result.retry()
+            if (isStopped) return@withLock androidx.work.ListenableWorker.Result.retry()
 
             // Network errors are isolated to this artist. LastFmCatalogApi
             // already performs up to three attempts with 20s timeouts.
@@ -93,7 +93,7 @@ class LastFmArtistArtworkWorker(
                 nextBatch
             )
         }
-        Result.success()
+        androidx.work.ListenableWorker.Result.success()
     }
 
     private fun isEligible(artist: Artist): Boolean =
