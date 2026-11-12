@@ -2,7 +2,7 @@
 <resources>
     <string name="about_album_label">درباره %s...</string>
     <string name="about_settings_summary">تیم، پیوندهای اجتماعی</string>
-    <string name="music_about_description">موزیک یک پخش‌کننده موسیقی اندروید است که توسط بهروز فیض ساخته شده است. اگر آرشیو بزرگ موسیقی شخصی دارید یا به موسیقی با فرمت FLAC گوش می‌دهید، این پلیر برای شما طراحی شده است؛ بدون دردسر اصلاح تگ‌های فایل‌ها، مجموعه موسیقی خود را مستقیماً بر اساس پوشه‌ها و با ظاهری الهام‌گرفته از اسپاتیفای مرور کنید. وب‌سایت سازنده: Branex.ir — کد منبع پروژه: github.com/behrouzfeiz2/music</string>
+    <string name="music_about_description">موزیک یک پخش‌کننده موسیقی برای اندروید است که برای مدیریت و پخش آرشیوهای بزرگ موسیقی شخصی طراحی شده است. پوشه‌ها و آلبوم‌های موسیقی خود را به‌سادگی مرور کنید و بدون نیاز به ویرایش تگ فایل‌ها، به آهنگ‌هایتان گوش دهید. این برنامه از فرمت‌های رایج صوتی از جمله FLAC پشتیبانی می‌کند و تجربه‌ای روان برای علاقه‌مندان به مجموعه‌های موسیقی فراهم می‌آورد.</string>
     <string name="accent_color">رنگ تاکیدی محیط</string>
     <string name="accent_color_desc">رنگ تاکیدی محیط به صورت پیشفرض، رنگ بنفش است</string>
     <string name="action_about">درباره</string>
@@ -529,4 +529,10 @@
     <string name="spotify_client_id_summary">شناسه برنامه Spotify را وارد کنید</string>
     <string name="spotify_client_secret">Client Secret</string>
     <string name="spotify_client_secret_summary">کلید محرمانه برنامه Spotify را وارد کنید</string>
+    <string name="about_developer">توسعه‌دهنده: Behrouz Feiz</string>
+    <string name="about_website">وب‌سایت: Branex.ir</string>
+    <string name="about_telegram">تلگرام: branex_ir</string>
+    <string name="about_twitter">توییتر: branex_ir</string>
+    <string name="about_instagram">اینستاگرام: branex_ir</string>
+    <string name="music_about_description">موزیک یک پخش‌کننده موسیقی برای اندروید است که برای مدیریت و پخش آرشیوهای بزرگ موسیقی شخصی طراحی شده است. پوشه‌ها و آلبوم‌های موسیقی خود را به‌سادگی مرور کنید و بدون نیاز به ویرایش تگ فایل‌ها، به آهنگ‌هایتان گوش دهید. این برنامه از فرمت‌های رایج صوتی از جمله FLAC پشتیبانی می‌کند و تجربه‌ای روان برای علاقه‌مندان به مجموعه‌های موسیقی فراهم می‌آورد.</string>
 </resources>
