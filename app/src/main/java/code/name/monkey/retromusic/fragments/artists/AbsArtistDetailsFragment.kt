@@ -42,8 +42,6 @@ import code.name.monkey.retromusic.helper.SortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
-import code.name.monkey.retromusic.network.LastFmArtistArtworkLoader
-import code.name.monkey.retromusic.network.LastFmArtworkLoadResult
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmArtist
 import code.name.monkey.retromusic.repository.RealRepository
@@ -92,7 +90,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         mainActivity.addMusicServiceEventListener(detailsViewModel)
         mainActivity.setSupportActionBar(binding.toolbar)
         binding.toolbar.title = null
-        binding.artistCoverContainer.transitionName = (artistId ?: artistName).toString()
         postponeEnterTransition()
         detailsViewModel.getArtist().observe(viewLifecycleOwner) {
             view.doOnPreDraw {
@@ -109,11 +106,11 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             setOnClickListener { MusicPlayerRemote.openAndShuffleQueue(artist.songs, true) }
         }
 
-        binding.fragmentArtistContent.biographyText.setOnClickListener {
-            if (binding.fragmentArtistContent.biographyText.maxLines == 4) {
-                binding.fragmentArtistContent.biographyText.maxLines = Integer.MAX_VALUE
+        binding.biographyText.setOnClickListener {
+            if (binding.biographyText.maxLines == 4) {
+                binding.biographyText.maxLines = Integer.MAX_VALUE
             } else {
-                binding.fragmentArtistContent.biographyText.maxLines = 4
+                binding.biographyText.maxLines = 4
             }
         }
         setupSongSortButton()
@@ -147,21 +144,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             return
         }
         this.artist = artist
-        loadArtistImage(artist)
-        // Fetch this artist's Last.fm artwork immediately while the rest of the
-        // library is scanned independently by WorkManager.
-        if (!CustomArtistImageUtil.getInstance(requireContext()).hasCustomArtistImage(artist) &&
-            !CustomArtistImageUtil.getInstance(requireContext()).hasLastFmArtistImage(artist)
-        ) {
-            lifecycleScope.launch {
-                val result = LastFmArtistArtworkLoader.load(artist)
-                if (result == LastFmArtworkLoadResult.SAVED &&
-                    _binding != null && this@AbsArtistDetailsFragment.artist.id == artist.id
-                ) {
-                    loadArtistImage(artist)
-                }
-            }
-        }
         if (PreferenceUtil.isAllowedToDownloadMetadata(requireContext())) {
             loadBiography(artist.name)
         }
@@ -203,12 +185,12 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         if (lastFmArtist != null && lastFmArtist.artist != null && lastFmArtist.artist.bio != null) {
             val bioContent = lastFmArtist.artist.bio.content
             if (bioContent != null && bioContent.trim().isNotEmpty()) {
-                binding.fragmentArtistContent.run {
-                    biographyText.isVisible = true
-                    biographyTitle.isVisible = true
-                    biography = bioContent.parseAsHtml()
-                    biographyText.text = biography
-                    if (lastFmArtist.artist.stats.listeners.isNotEmpty()) {
+                binding.biographyTitle.isVisible = true
+                binding.biographyText.isVisible = true
+                biography = bioContent.parseAsHtml()
+                binding.biographyText.text = biography
+                if (lastFmArtist.artist.stats.listeners.isNotEmpty()) {
+                    binding.fragmentArtistContent.run {
                         listeners.show()
                         listenersLabel.show()
                         scrobbles.show()
