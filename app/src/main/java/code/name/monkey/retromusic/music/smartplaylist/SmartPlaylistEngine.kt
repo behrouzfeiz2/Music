@@ -5,13 +5,13 @@
 package code.name.monkey.retromusic.music.smartplaylist
 
 import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.LastFMService
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.text.Normalizer
@@ -28,29 +28,36 @@ object SmartPlaylistEngine {
     suspend fun buildLastFmMix(
         localSongs: List<Song>,
         lastFm: LastFMService,
-        maxSongs: Int = 40
+        maxSongs: Int = 50,
+        apiKey: String = LastFMService.API_KEY
     ): List<Song> = coroutineScope {
-        val localArtists = localSongs.mapNotNull { song ->
-            val folder = FolderArtistRepository.folderPathForSong(song.data) ?: return@mapNotNull null
-            folder to song
-        }.groupBy({ it.first }, { it.second })
+        // The selected folders may be artist folders, album folders, or a mix.
+        // Use the embedded artist metadata so every selected folder structure works.
+        val localArtists = localSongs
+            .groupBy { song ->
+                song.artistName.trim().ifBlank { song.albumArtist?.trim().orEmpty() }
+            }
+            .filterKeys { it.isNotBlank() }
             .entries
             .sortedBy { it.key.lowercase(Locale.ROOT) }
-            .take(12)
 
         if (localArtists.isEmpty()) return@coroutineScope emptyList()
 
-        val semaphore = Semaphore(3)
+        val semaphore = Semaphore(1)
         val successfulRequests = AtomicInteger(0)
         val ranked = localArtists.mapIndexed { index, entry ->
             async {
                 semaphore.withPermit {
                     runCatching {
-                        val artistName = entry.key.substringAfterLast('/')
-                        val response = lastFm.artistTopTracks(artistName, 50)
+                        val artistName = entry.key
+                        val response = lastFm.artistTopTracks(artistName, 100, apiKey)
+                        val matches = parseMatches(response, artistName, entry.value, index)
                         successfulRequests.incrementAndGet()
-                        parseMatches(response, artistName, entry.value, index)
+                        matches
                     }.getOrDefault(emptyList())
+                }.also {
+                    // Keep requests comfortably below Last.fm rate limits.
+                    delay(400)
                 }
             }
         }.awaitAll().flatten()
