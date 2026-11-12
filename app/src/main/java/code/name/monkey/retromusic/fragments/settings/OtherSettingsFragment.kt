@@ -35,6 +35,11 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.async
 
 /**
  * @author Hemanth S (h4h13).
@@ -66,34 +71,79 @@ class OtherSettingsFragment : AbsSettingsFragment() {
             true
         }
         val rebuildPreference: Preference? = findPreference("spotify_rebuild_archive")
-        rebuildPreference?.setOnPreferenceClickListener { preference ->
-            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+        rebuildPreference?.setOnPreferenceClickListener { clickedPreference ->
+            val appContext = requireContext().applicationContext
+            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(appContext)
             val hasCredentials = !prefs.getString("spotify_client_id", "").isNullOrBlank() &&
                 !prefs.getString("spotify_client_secret", "").isNullOrBlank()
             if (!hasCredentials) {
-                Toast.makeText(requireContext(), R.string.spotify_credentials_required, Toast.LENGTH_LONG).show()
+                Toast.makeText(appContext, appContext.getString(R.string.spotify_credentials_required), Toast.LENGTH_LONG).show()
                 return@setOnPreferenceClickListener true
             }
-            preference.isEnabled = false
-            preference.summary = getString(R.string.spotify_rebuild_starting)
+
+            clickedPreference.isEnabled = false
+            clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_starting)
+            val imageUtil = CustomArtistImageUtil.getInstance(appContext)
             viewLifecycleOwner.lifecycleScope.launch {
-                val artists = withContext(Dispatchers.IO) { libraryViewModel.getArtistsForSpotifyRebuild() }
-                    .distinctBy { it.id }
-                    .filter { it.name.isNotBlank() && it.name != "Unknown Artist" && it.name != "Various Artists" }
-                var saved = 0
                 var checked = 0
-                val imageUtil = CustomArtistImageUtil.getInstance(requireContext())
-                for (artist in artists) {
-                    checked++
-                    val imageUrl = runCatching { SpotifyCatalogApi.findArtistImage(artist.name) }.getOrNull()
-                    if (imageUrl != null && !imageUtil.hasCustomArtistImage(artist) &&
-                        !imageUtil.hasSpotifyArtistImage(artist) &&
-                        imageUtil.cacheSpotifyArtistImage(artist, imageUrl)) saved++
-                    preference.summary = getString(R.string.spotify_rebuild_progress, checked, artists.size)
+                var saved = 0
+                try {
+                    val artists = withContext(Dispatchers.IO) {
+                        libraryViewModel.getArtistsForSpotifyRebuild()
+                    }.distinctBy { it.id }
+                        .filter {
+                            it.name.isNotBlank() &&
+                                it.name != "Unknown Artist" &&
+                                it.name != "Various Artists" &&
+                                !imageUtil.hasCustomArtistImage(it) &&
+                                !imageUtil.hasSpotifyArtistImage(it)
+                        }
+
+                    val total = artists.size
+                    val semaphore = kotlinx.coroutines.sync.Semaphore(4)
+                    kotlinx.coroutines.coroutineScope {
+                        artists.map { artist ->
+                            kotlinx.coroutines.async(Dispatchers.IO) {
+                                semaphore.withPermit {
+                                    kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                                    val imageUrl = SpotifyCatalogApi.findArtistImage(artist.name)
+                                    val wasSaved = imageUrl != null &&
+                                        imageUtil.cacheSpotifyArtistImage(artist, imageUrl)
+                                    wasSaved
+                                }
+                            }
+                        }.forEach { task ->
+                            val wasSaved = task.await()
+                            checked++
+                            if (wasSaved) saved++
+                            if (isAdded && view != null) {
+                                clickedPreference.summary = appContext.getString(
+                                    R.string.spotify_rebuild_progress, checked, total
+                                )
+                            }
+                        }
+                    }
+
+                    if (isAdded && view != null) {
+                        clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_summary)
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.spotify_rebuild_complete, checked, saved),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    if (isAdded && view != null) {
+                        clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_summary)
+                        Toast.makeText(appContext, "Spotify artwork update failed. Please try again.", Toast.LENGTH_LONG).show()
+                    }
+                } finally {
+                    if (isAdded && view != null) {
+                        clickedPreference.isEnabled = true
+                    }
                 }
-                preference.isEnabled = true
-                preference.summary = getString(R.string.spotify_rebuild_summary)
-                Toast.makeText(requireContext(), getString(R.string.spotify_rebuild_complete, checked, saved), Toast.LENGTH_LONG).show()
             }
             true
         }
