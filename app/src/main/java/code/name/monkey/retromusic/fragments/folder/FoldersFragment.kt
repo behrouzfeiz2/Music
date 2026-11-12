@@ -65,7 +65,6 @@ import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
 import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.music.smartplaylist.FolderSongSelector
 import code.name.monkey.retromusic.activities.tageditor.SongTagEditorActivity
 import code.name.monkey.retromusic.providers.BlacklistStore
 import code.name.monkey.retromusic.util.FileUtil
@@ -266,7 +265,7 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                     R.id.action_tag_editor -> {
                         lifecycleScope.launch {
                             val songs = withContext(Dispatchers.IO) {
-                                FolderSongSelector.songsInFiles(listOf(file))
+                                findSongsForTagEditor(listOf(file))
                             }
                             openTagEditor(songs)
                         }
@@ -283,7 +282,7 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         lifecycleScope.launch {
                             if (itemId == R.id.action_tag_editor) {
                                 val songs = withContext(Dispatchers.IO) {
-                                    FolderSongSelector.songsInFiles(listOf(file))
+                                    findSongsForTagEditor(listOf(file))
                                 }
                                 openTagEditor(songs)
                             } else {
@@ -375,6 +374,17 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
         updateAdapter(LinkedList())
     }
 
+    /**
+     * Resolve audio files directly from the folder browser selection.
+     * Repository.allSongs() applies library filters (duration, whitelist and
+     * blacklist), which must not hide files from the folder-based tag editor.
+     */
+    private suspend fun findSongsForTagEditor(files: List<File>): List<Song> =
+        withContext(Dispatchers.IO) {
+            val audioFiles = FileUtil.listFilesDeep(files, AUDIO_FILE_FILTER)
+            FileUtil.matchFilesWithMediaStore(requireContext(), audioFiles)
+        }
+
     private fun openTagEditor(songs: List<Song>) {
         val validSongs = songs.distinctBy { it.id }
             .filter { it.id > 0L && it.data.isNotBlank() }
@@ -426,7 +436,7 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
         if (itemId == R.id.action_tag_editor) {
             lifecycleScope.launch {
                 val songs = withContext(Dispatchers.IO) {
-                    FolderSongSelector.songsInFiles(files)
+                    findSongsForTagEditor(files)
                 }
                 openTagEditor(songs)
             }
