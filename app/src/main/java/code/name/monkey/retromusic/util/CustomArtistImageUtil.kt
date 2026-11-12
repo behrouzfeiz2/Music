@@ -136,7 +136,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
     }
 
-    fun hasLastFmArtistImage(artist: Artist): Boolean = getSpotifyFile(artist).exists()
+    fun hasLastFmArtistImage(artist: Artist): Boolean = getLastFmFile(artist).exists()
 
     // shared prefs saves us many IO operations
     fun hasCustomArtistImage(artist: Artist): Boolean {
@@ -146,7 +146,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
     companion object {
         private const val CUSTOM_ARTIST_IMAGE_PREFS = "custom_artist_image"
         private const val FOLDER_NAME = "/custom_artist_images/"
-        private const val SPOTIFY_FOLDER_NAME = "/lastfm_artist_images/"
+        private const val LASTFM_FOLDER_NAME = "/lastfm_artist_images/"
 
         private var sInstance: CustomArtistImageUtil? = null
 
@@ -171,8 +171,8 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
 
         @JvmStatic
-        fun getSpotifyFile(artist: Artist): File {
-            val dir = File(App.getContext().filesDir, SPOTIFY_FOLDER_NAME)
+        fun getLastFmFile(artist: Artist): File {
+            val dir = File(App.getContext().filesDir, LASTFM_FOLDER_NAME)
             return File(dir, getFileName(artist))
         }
     }
