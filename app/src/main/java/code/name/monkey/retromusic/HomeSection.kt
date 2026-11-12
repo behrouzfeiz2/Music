@@ -24,7 +24,8 @@ import androidx.annotation.IntDef
     SUGGESTIONS,
     FAVOURITES,
     GENRES,
-    PLAYLISTS
+    PLAYLISTS,
+    DAILY_MIXES
 )
 @Retention(AnnotationRetention.SOURCE)
 annotation class HomeSection
