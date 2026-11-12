@@ -57,6 +57,7 @@ import code.name.monkey.retromusic.helper.SortOrder.AlbumSongSortOrder.Companion
 import code.name.monkey.retromusic.helper.SortOrder.AlbumSongSortOrder.Companion.SONG_Z_A
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmAlbum
@@ -190,15 +191,7 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
     private fun sortAlbumSongs(songs: List<code.name.monkey.retromusic.model.Song>): List<code.name.monkey.retromusic.model.Song> {
         if (arguments.extraArtistName.isNullOrBlank()) return songs
         return when (savedSortOrder) {
-            SONG_TRACK_LIST -> songs.sortedWith(
-                compareBy<code.name.monkey.retromusic.model.Song> { song ->
-                    when {
-                        song.trackNumber > 0 -> song.trackNumber
-                        else -> Regex("^\\s*(\\d+)").find(java.io.File(song.data).name)
-                            ?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Int.MAX_VALUE
-                    }
-                }.thenBy { java.io.File(it.data).name.lowercase(java.util.Locale.ROOT) }
-            )
+            SONG_TRACK_LIST -> FolderArtistRepository.sortTracksByFolderOrder(songs)
             SONG_A_Z -> songs.sortedWith { left, right ->
                 Collator.getInstance().compare(left.title, right.title)
             }
