@@ -29,7 +29,7 @@ import code.name.monkey.retromusic.extensions.installLanguageAndRecreate
 import code.name.monkey.retromusic.fragments.LibraryViewModel
 import code.name.monkey.retromusic.fragments.ReloadType.HomeSections
 import code.name.monkey.retromusic.util.PreferenceUtil
-import code.name.monkey.retromusic.network.SpotifyCatalogApi
+import code.name.monkey.retromusic.network.LastFmCatalogApi
 import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.Dispatchers
@@ -70,65 +70,48 @@ class OtherSettingsFragment : AbsSettingsFragment() {
             libraryViewModel.forceReload(HomeSections)
             true
         }
-        val rebuildPreference: Preference? = findPreference("spotify_rebuild_archive")
+        val rebuildPreference: Preference? = findPreference("lastfm_rebuild_archive")
         rebuildPreference?.setOnPreferenceClickListener { clickedPreference ->
             val appContext = requireContext().applicationContext
-            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(appContext)
-            val hasCredentials = !prefs.getString("spotify_client_id", "").isNullOrBlank() &&
-                !prefs.getString("spotify_client_secret", "").isNullOrBlank()
-            if (!hasCredentials) {
-                Toast.makeText(appContext, appContext.getString(R.string.spotify_credentials_required), Toast.LENGTH_LONG).show()
-                return@setOnPreferenceClickListener true
-            }
-
             clickedPreference.isEnabled = false
-            clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_starting)
+            clickedPreference.summary = appContext.getString(R.string.lastfm_rebuild_starting)
             val imageUtil = CustomArtistImageUtil.getInstance(appContext)
             viewLifecycleOwner.lifecycleScope.launch {
                 var checked = 0
                 var saved = 0
                 try {
                     val artists = withContext(Dispatchers.IO) {
-                        libraryViewModel.getArtistsForSpotifyRebuild()
+                        libraryViewModel.getArtistsForArtworkRebuild()
                     }.distinctBy { it.id }
                         .filter {
                             it.name.isNotBlank() &&
                                 it.name != "Unknown Artist" &&
                                 it.name != "Various Artists" &&
                                 !imageUtil.hasCustomArtistImage(it) &&
-                                !imageUtil.hasSpotifyArtistImage(it)
+                                !imageUtil.hasLastFmArtistImage(it)
                         }
 
                     val total = artists.size
-                    val semaphore = kotlinx.coroutines.sync.Semaphore(1)
-                    kotlinx.coroutines.coroutineScope {
-                        artists.map { artist ->
-                            async(Dispatchers.IO) {
-                                semaphore.withPermit {
-                                    kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                                    val imageUrl = SpotifyCatalogApi.findArtistImage(artist.name)
-                                    val wasSaved = imageUrl != null &&
-                                        imageUtil.cacheSpotifyArtistImage(artist, imageUrl)
-                                    wasSaved
-                                }
-                            }
-                        }.forEach { task ->
-                            val wasSaved = task.await()
-                            checked++
-                            if (wasSaved) saved++
-                            if (isAdded && view != null) {
-                                clickedPreference.summary = appContext.getString(
-                                    R.string.spotify_rebuild_progress, checked, total
-                                )
-                            }
+                    artists.forEachIndexed { index, artist ->
+                        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                        val imageUrl = LastFmCatalogApi.findArtistImage(artist.name)
+                        val wasSaved = imageUrl != null &&
+                            imageUtil.cacheLastFmArtistImage(artist, imageUrl)
+                        checked++
+                        if (wasSaved) saved++
+                        if (isAdded && view != null) {
+                            clickedPreference.summary = appContext.getString(
+                                R.string.lastfm_rebuild_progress, checked, total
+                            )
                         }
+                        if (index < artists.lastIndex) kotlinx.coroutines.delay(1100L)
                     }
 
                     if (isAdded && view != null) {
-                        clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_summary)
+                        clickedPreference.summary = appContext.getString(R.string.lastfm_rebuild_summary)
                         Toast.makeText(
                             appContext,
-                            appContext.getString(R.string.spotify_rebuild_complete, checked, saved),
+                            appContext.getString(R.string.lastfm_rebuild_complete, checked, saved),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -136,12 +119,12 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                     throw cancelled
                 } catch (error: Exception) {
                     if (isAdded && view != null) {
-                        clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_summary)
-                        val detail = error.message?.take(180).orEmpty()
+                        clickedPreference.summary = appContext.getString(R.string.lastfm_rebuild_summary)
+                        val detail = error.message?.take(160).orEmpty()
                         val message = if (detail.isNotBlank()) {
-                            "Spotify update failed: $detail"
+                            "Last.fm update failed: $detail"
                         } else {
-                            "Spotify artwork update failed. Check your internet connection and try again."
+                            appContext.getString(R.string.lastfm_rebuild_failed)
                         }
                         Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
                     }
