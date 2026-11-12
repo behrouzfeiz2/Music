@@ -22,6 +22,7 @@ import androidx.core.text.parseAsHtml
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -173,17 +174,21 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
 
 
     private fun loadSpotifyCatalog(currentArtist: Artist) {
-        binding.spotifyCatalog.removeAllViews()
-        binding.spotifyCatalog.isVisible = false
-        binding.spotifyLoading.isVisible =
-            code.name.monkey.retromusic.BuildConfig.SPOTIFY_CLIENT_ID.isNotBlank() &&
-            code.name.monkey.retromusic.BuildConfig.SPOTIFY_CLIENT_SECRET.isNotBlank()
-        if (!binding.spotifyLoading.isVisible) return
+        val root = binding.root
+        val spotifyContainer = root.findViewById<LinearLayout>(R.id.spotifyCatalog) ?: return
+        val loading = root.findViewById<android.widget.ProgressBar>(R.id.spotifyLoading) ?: return
+        spotifyContainer.removeAllViews()
+        spotifyContainer.isVisible = false
+        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val hasCredentials = !preferences.getString("spotify_client_id", "").isNullOrBlank() &&
+            !preferences.getString("spotify_client_secret", "").isNullOrBlank()
+        loading.isVisible = hasCredentials
+        if (!hasCredentials) return
 
         viewLifecycleOwner.lifecycleScope.launch {
             val profile = runCatching { SpotifyCatalogApi.findArtist(currentArtist.name) }.getOrNull()
             if (_binding == null || !isAdded || artist.name != currentArtist.name) return@launch
-            binding.spotifyLoading.isVisible = false
+            loading.isVisible = false
             if (profile != null) {
                 renderSpotifyCatalog(profile, currentArtist)
                 profile.imageUrl?.let { imageUrl ->
@@ -200,7 +205,7 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     }
 
     private fun renderSpotifyCatalog(profile: SpotifyArtistProfile, localArtist: Artist) {
-        val container = binding.spotifyCatalog
+        val container = binding.root.findViewById<LinearLayout>(R.id.spotifyCatalog) ?: return
         container.removeAllViews()
         container.isVisible = true
         binding.artistTitle.text = profile.name
