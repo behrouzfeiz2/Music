@@ -16,7 +16,8 @@ import code.name.monkey.retromusic.glide.palette.BitmapPaletteWrapper
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.ArtistSignatureUtil
-import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getFile\nimport code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getSpotifyFile
+import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getFile
+import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getSpotifyFile
 import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getInstance
 import code.name.monkey.retromusic.util.MusicUtil.getMediaStoreAlbumCoverUri
 import code.name.monkey.retromusic.util.PreferenceUtil
@@ -90,10 +91,10 @@ object RetroGlideExtension {
         hasCustomImage: Boolean,
         forceDownload: Boolean
     ): Any {
-        return if (!hasCustomImage) {
-            ArtistImage(artist)
-        } else {
-            getFile(artist)
+        return when {
+            hasCustomImage -> getFile(artist)
+            getSpotifyFile(artist).exists() -> getSpotifyFile(artist)
+            else -> ArtistImage(artist)
         }
     }
 
