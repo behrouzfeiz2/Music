@@ -50,7 +50,7 @@ Music/
 
 ## دریافت نسخه
 
-نسخه‌های منتشرشده از بخش [Releases](https://github.com/behrouzfeiz2/RetroMusicPlayer/releases) قابل دریافت خواهند بود. وضعیت ساخت خودکار برنامه را نیز می‌توانید در [GitHub Actions](https://github.com/behrouzfeiz2/RetroMusicPlayer/actions) ببینید.
+نسخه‌های منتشرشده از بخش [Releases](https://github.com/behrouzfeiz2/music/releases) قابل دریافت خواهند بود. وضعیت ساخت خودکار برنامه را نیز می‌توانید در [GitHub Actions](https://github.com/behrouzfeiz2/music/actions) ببینید.
 
 ## سازنده و توسعه‌دهنده
 
