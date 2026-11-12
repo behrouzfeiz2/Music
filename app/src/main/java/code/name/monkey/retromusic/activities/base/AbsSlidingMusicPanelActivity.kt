@@ -490,6 +490,8 @@ abstract class AbsSlidingMusicPanelActivity : AbsMusicServiceActivity(),
                     .setIcon(menu.icon)
             }
         }
+        binding.navigationView.menu.add(0, R.id.action_online, 0, R.string.online)
+            .setIcon(R.drawable.ic_search)
         if (binding.navigationView.menu.size == 1) {
             isInOneTabMode = true
             binding.navigationView.isVisible = false
