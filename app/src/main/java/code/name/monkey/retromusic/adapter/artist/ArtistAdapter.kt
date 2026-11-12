@@ -44,6 +44,7 @@ import code.name.monkey.retromusic.interfaces.IArtistClickListener
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.MusicUtil
+import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.color.MediaNotificationProcessor
 import com.bumptech.glide.Glide
@@ -64,13 +65,6 @@ class ArtistAdapter(
     var albumArtistsOnly = false
 
     private val coverExecutor = Executors.newFixedThreadPool(2)
-    private var spotifyImageUrls: Map<String, String> = emptyMap()
-
-    fun setSpotifyImageUrls(urls: Map<String, String>) {
-        spotifyImageUrls = urls
-        notifyDataSetChanged()
-    }
-
     init {
         this.setHasStableIds(true)
     }
@@ -149,18 +143,22 @@ class ArtistAdapter(
 
     private fun loadArtistImage(artist: Artist, holder: ViewHolder) {
         val imageView = holder.image ?: return
-        val spotifyImage = spotifyImageUrls[artist.name]
-        if (!spotifyImage.isNullOrBlank()) {
+        val imageUtil = CustomArtistImageUtil.getInstance(activity)
+        val hasPreferredCover = imageUtil.hasCustomArtistImage(artist) ||
+            imageUtil.hasSpotifyArtistImage(artist)
+        if (hasPreferredCover) {
             imageView.tag = artist.id
-            imageView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            imageView.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
             Glide.with(activity)
-                .load(spotifyImage)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true)
-                .dontTransform()
-                .placeholder(R.drawable.default_album_art)
-                .error(R.drawable.default_album_art)
-                .into(imageView)
+                .asBitmapPalette()
+                .artistImageOptions(artist)
+                .load(RetroGlideExtension.getArtistModel(artist))
+                .transition(RetroGlideExtension.getDefaultTransition())
+                .into(object : RetroMusicColoredTarget(imageView) {
+                    override fun onColorReady(colors: MediaNotificationProcessor) {
+                        setColors(colors, holder)
+                    }
+                })
             return
         }
         imageView.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
