@@ -3,7 +3,6 @@ package code.name.monkey.retromusic.fragments.artists
 import android.graphics.Color
 import android.content.Intent
 import android.net.Uri
-import android.util.TypedValue
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -204,6 +203,9 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         val container = binding.spotifyCatalog
         container.removeAllViews()
         container.isVisible = true
+        binding.artistTitle.text = profile.name
+        binding.fragmentArtistContent.albumTitle.text = "Albums in your library"
+        binding.fragmentArtistContent.songTitle.text = "Your local tracks"
 
         val popularTitle = spotifySectionTitle("Popular tracks")
         container.addView(popularTitle)
@@ -236,8 +238,10 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         }
 
         if (profile.spotifyUrl.isNotBlank()) {
-            val attribution = spotifyCaption("Spotify  •  View artist on Spotify").apply {
+            val attribution = spotifyCaption("View artist on Spotify").apply {
                 gravity = Gravity.END
+                setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_spotify, 0, 0, 0)
+                compoundDrawablePadding = dp(6)
                 setPadding(dp(16), dp(8), dp(16), dp(16))
                 setOnClickListener {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(profile.spotifyUrl)))
