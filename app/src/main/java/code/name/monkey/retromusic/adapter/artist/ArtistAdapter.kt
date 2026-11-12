@@ -47,6 +47,7 @@ import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.color.MediaNotificationProcessor
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import me.zhanghai.android.fastscroll.PopupTextProvider
 import java.util.concurrent.Executors
 
@@ -63,6 +64,12 @@ class ArtistAdapter(
     var albumArtistsOnly = false
 
     private val coverExecutor = Executors.newFixedThreadPool(2)
+    private var spotifyImageUrls: Map<String, String> = emptyMap()
+
+    fun setSpotifyImageUrls(urls: Map<String, String>) {
+        spotifyImageUrls = urls
+        notifyDataSetChanged()
+    }
 
     init {
         this.setHasStableIds(true)
@@ -142,6 +149,21 @@ class ArtistAdapter(
 
     private fun loadArtistImage(artist: Artist, holder: ViewHolder) {
         val imageView = holder.image ?: return
+        val spotifyImage = spotifyImageUrls[artist.name]
+        if (!spotifyImage.isNullOrBlank()) {
+            imageView.tag = artist.id
+            imageView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            Glide.with(activity)
+                .load(spotifyImage)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .dontTransform()
+                .placeholder(R.drawable.default_album_art)
+                .error(R.drawable.default_album_art)
+                .into(imageView)
+            return
+        }
+        imageView.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
         when {
             artist.albums.size >= 2 -> {
                 loadFolderCollage(artist, holder)
