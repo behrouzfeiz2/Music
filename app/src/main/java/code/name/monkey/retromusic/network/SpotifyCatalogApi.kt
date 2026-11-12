@@ -58,7 +58,7 @@ object SpotifyCatalogApi {
                 val item = artists.optJSONObject(i) ?: continue
                 if (normalize(item.optString("name")) == wanted) { selected = item; break }
             }
-            val artist = selected ?: artists.optJSONObject(0) ?: return@withContext null
+            val artist = selected ?: return@withContext null
             val artistName = artist.optString("name", name)
             val artistId = artist.optString("id")
             if (artistId.isBlank()) return@withContext null
@@ -129,21 +129,32 @@ object SpotifyCatalogApi {
     }
 
     private fun getJson(url: String, token: String): JSONObject {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        try {
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 12_000
-            connection.readTimeout = 12_000
-            connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.setRequestProperty("Accept", "application/json")
-            val code = connection.responseCode
-            val stream = if (code in 200..299) connection.inputStream else connection.errorStream
-            val body = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
-            if (code !in 200..299) throw IllegalStateException("Spotify API returned HTTP $code")
-            return JSONObject(body)
-        } finally { connection.disconnect() }
+        var attempt = 0
+        while (true) {
+            val connection = URL(url).openConnection() as HttpURLConnection
+            try {
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 12_000
+                connection.readTimeout = 12_000
+                connection.setRequestProperty("Authorization", "Bearer $token")
+                connection.setRequestProperty("Accept", "application/json")
+                val code = connection.responseCode
+                if (code == 429 && attempt < 2) {
+                    val retryAfter = connection.getHeaderField("Retry-After")?.toLongOrNull() ?: 1L
+                    connection.disconnect()
+                    Thread.sleep(retryAfter.coerceIn(1L, 10L) * 1000L)
+                    attempt++
+                    continue
+                }
+                val stream = if (code in 200..299) connection.inputStream else connection.errorStream
+                val body = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (code !in 200..299) throw IllegalStateException("Spotify API returned HTTP $code")
+                return JSONObject(body)
+            } finally {
+                connection.disconnect()
+            }
+        }
     }
-
     private fun normalize(value: String): String =
         value.lowercase().replace(Regex("[^\\p{L}\\p{N}]"), "")
 }
