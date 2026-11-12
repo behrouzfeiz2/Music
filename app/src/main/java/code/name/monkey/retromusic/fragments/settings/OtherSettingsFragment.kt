@@ -15,10 +15,10 @@
 package code.name.monkey.retromusic.fragments.settings
 
 import android.os.Bundle
-import android.view.View
+import android.view.View\nimport android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.preference.Preference
+import androidx.preference.Preference\nimport androidx.lifecycle.lifecycleScope
 import code.name.monkey.appthemehelper.common.prefs.supportv7.ATEListPreference
 import code.name.monkey.retromusic.LANGUAGE_NAME
 import code.name.monkey.retromusic.LAST_ADDED_CUTOFF
@@ -26,8 +26,8 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.extensions.installLanguageAndRecreate
 import code.name.monkey.retromusic.fragments.LibraryViewModel
 import code.name.monkey.retromusic.fragments.ReloadType.HomeSections
-import code.name.monkey.retromusic.util.PreferenceUtil
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import code.name.monkey.retromusic.util.PreferenceUtil\nimport code.name.monkey.retromusic.network.SpotifyCatalogApi\nimport code.name.monkey.retromusic.util.CustomArtistImageUtil
+import org.koin.androidx.viewmodel.ext.android.activityViewModel\nimport kotlinx.coroutines.Dispatchers\nimport kotlinx.coroutines.withContext\nimport kotlinx.coroutines.launch
 
 /**
  * @author Hemanth S (h4h13).
@@ -58,7 +58,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
             libraryViewModel.forceReload(HomeSections)
             true
         }
-        val languagePreference: Preference? = findPreference(LANGUAGE_NAME)
+        val rebuildPreference: Preference? = findPreference("spotify_rebuild_archive")\n        rebuildPreference?.setOnPreferenceClickListener { preference ->\n            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())\n            val hasCredentials = !prefs.getString("spotify_client_id", "").isNullOrBlank() &&\n                !prefs.getString("spotify_client_secret", "").isNullOrBlank()\n            if (!hasCredentials) {\n                Toast.makeText(requireContext(), R.string.spotify_credentials_required, Toast.LENGTH_LONG).show()\n                return@setOnPreferenceClickListener true\n            }\n            preference.isEnabled = false\n            preference.summary = getString(R.string.spotify_rebuild_starting)\n            viewLifecycleOwner.lifecycleScope.launch {\n                val artists = withContext(Dispatchers.IO) { libraryViewModel.getArtistsForSpotifyRebuild() }\n                    .distinctBy { it.name.trim().lowercase() }\n                    .filter { it.name.isNotBlank() && it.name != "Unknown Artist" && it.name != "Various Artists" }\n                var saved = 0\n                var checked = 0\n                val imageUtil = CustomArtistImageUtil.getInstance(requireContext())\n                for (artist in artists) {\n                    checked++\n                    val imageUrl = runCatching { SpotifyCatalogApi.findArtistImage(artist.name) }.getOrNull()\n                    if (imageUrl != null && !imageUtil.hasCustomArtistImage(artist) &&\n                        imageUtil.cacheSpotifyArtistImage(artist, imageUrl)) saved++\n                    preference.summary = getString(R.string.spotify_rebuild_progress, checked, artists.size)\n                }\n                preference.isEnabled = true\n                preference.summary = getString(R.string.spotify_rebuild_summary)\n                Toast.makeText(requireContext(), getString(R.string.spotify_rebuild_complete, checked, saved), Toast.LENGTH_LONG).show()\n            }\n            true\n        }\n        val languagePreference: Preference? = findPreference(LANGUAGE_NAME)
         languagePreference?.setOnPreferenceChangeListener { prefs, newValue ->
             setSummary(prefs, newValue)
             if (newValue as? String == "auto") {
