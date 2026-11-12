@@ -38,10 +38,11 @@ interface LastFMService {
         @Header("Cache-Control") cacheControl: String?
     ): LastFmArtist
 
-    @GET("$BASE_QUERY_PARAMETERS&method=artist.gettoptracks")
+    @GET("?format=json&autocorrect=1&method=artist.gettoptracks")
     suspend fun artistTopTracks(
         @Query("artist") artistName: String,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("api_key") apiKey: String = API_KEY
     ): JsonObject
 
     @GET("$BASE_QUERY_PARAMETERS&method=album.getinfo")
