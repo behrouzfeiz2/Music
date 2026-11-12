@@ -19,7 +19,9 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: Setup Signing
-        run: ./ci_signing_setup.sh
+        run: |
+          ./ci_signing_setup.sh
+          test -s retro.keystore && test -s retro.properties || { echo "Configure SIGNING_KEYSTORE_GITHUB and SIGNING_PROPERTIES_GITHUB repository secrets before publishing releases."; exit 1; }
       - name: Build
         run: ./gradlew app:assemble
       - name: Github Release
