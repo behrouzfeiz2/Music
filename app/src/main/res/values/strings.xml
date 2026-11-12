@@ -17,6 +17,11 @@
     <string name="best_of_created">%1$s Best of created with %2$d tracks.</string>
     <string name="developer_credit_title">Designed and developed by Behrouz Feyz</string>
     <string name="developer_credit_summary">Branex.ir</string>
+    <string name="best_of_selection">Best of Selection (Last.fm)</string>
+    <string name="best_of_selection_playlist_name">Best of Selection</string>
+    <string name="best_of_selection_building">Checking selected folders against Last.fm rankings…</string>
+    <string name="best_of_selection_created">%1$d tracks added to %2$s</string>
+    <string name="best_of_selection_folders_only">Select one or more folders to build Best of Selection.</string>
     <string name="smart_playlist">Build Last.fm Smart Mix</string>
     <string name="smart_playlist_name">Last.fm Smart Mix</string>
     <string name="smart_playlist_building">Matching your library with Last.fm rankings…</string>
