@@ -14,8 +14,6 @@
  */
 package code.name.monkey.retromusic.fragments.albums
 
-import android.app.ActivityOptions
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
@@ -36,8 +34,6 @@ import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.EXTRA_ARTIST_NAME
 import code.name.monkey.retromusic.EXTRA_ARTIST_ID
 import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.activities.tageditor.AbsTagEditorActivity
-import code.name.monkey.retromusic.activities.tageditor.AlbumTagEditorActivity
 import code.name.monkey.retromusic.adapter.album.HorizontalAlbumAdapter
 import code.name.monkey.retromusic.adapter.song.SimpleSongAdapter
 import code.name.monkey.retromusic.databinding.FragmentAlbumDetailsBinding
@@ -396,20 +392,6 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
 
             R.id.action_delete_from_device -> {
                 DeleteSongsDialog.create(songs).show(childFragmentManager, "DELETE_SONGS")
-                return true
-            }
-
-            R.id.action_tag_editor -> {
-                val intent = Intent(requireContext(), AlbumTagEditorActivity::class.java)
-                intent.putExtra(AbsTagEditorActivity.EXTRA_ID, album.id)
-                val options = ActivityOptions.makeSceneTransitionAnimation(
-                    requireActivity(),
-                    binding.albumCoverContainer,
-                    "${getString(R.string.transition_album_art)}_${album.id}"
-                )
-                startActivity(
-                    intent, options.toBundle()
-                )
                 return true
             }
 
