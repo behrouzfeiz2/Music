@@ -29,7 +29,8 @@ import code.name.monkey.retromusic.extensions.installLanguageAndRecreate
 import code.name.monkey.retromusic.fragments.LibraryViewModel
 import code.name.monkey.retromusic.fragments.ReloadType.HomeSections
 import code.name.monkey.retromusic.util.PreferenceUtil
-import code.name.monkey.retromusic.network.LastFmCatalogApi
+import code.name.monkey.retromusic.network.LastFmArtistArtworkLoader
+import code.name.monkey.retromusic.network.LastFmArtworkLoadResult
 import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.Dispatchers
@@ -91,23 +92,15 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                     val total = artists.size
                     artists.forEachIndexed { index, artist ->
                         kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                        var requestFailed = false
-                        val imageUrl = try {
-                            LastFmCatalogApi.findArtistImage(artist.name)
-                        } catch (error: java.io.IOException) {
-                            // A timeout for one artist must not stop the entire archive scan.
-                            requestFailed = true
-                            saveFailed++
-                            null
-                        }
-                        val wasSaved = if (imageUrl != null) {
-                            imageUtil.cacheLastFmArtistImage(artist, imageUrl)
-                        } else {
-                            if (!requestFailed) notFound++
-                            false
-                        }
+                        val result = LastFmArtistArtworkLoader.load(artist, forceRefresh = true)
                         checked++
-                        if (wasSaved) saved++ else if (imageUrl != null) saveFailed++
+                        when (result) {
+                            LastFmArtworkLoadResult.SAVED -> saved++
+                            LastFmArtworkLoadResult.NOT_FOUND -> notFound++
+                            LastFmArtworkLoadResult.FAILED -> saveFailed++
+                            LastFmArtworkLoadResult.ALREADY_CACHED,
+                            LastFmArtworkLoadResult.CUSTOM_IMAGE -> Unit
+                        }
                         if (isAdded && view != null) {
                             clickedPreference.summary = appContext.getString(
                                 R.string.lastfm_rebuild_progress, checked, total
