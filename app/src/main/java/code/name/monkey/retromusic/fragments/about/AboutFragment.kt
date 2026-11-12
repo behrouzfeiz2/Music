@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.databinding.FragmentAboutBinding
 import code.name.monkey.retromusic.extensions.openUrl
-import code.name.monkey.retromusic.extensions.openUrl
 import dev.chrisbanes.insetter.applyInsetter
 
 class AboutFragment : Fragment(R.layout.fragment_about) {
@@ -17,19 +16,19 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAboutBinding.bind(view)
 
-        binding.aboutContent.developerInfo.setOnClickListener {
+        binding.aboutContent.developerInfo?.setOnClickListener {
             openUrl("https://branex.ir")
         }
-        binding.aboutContent.websiteInfo.setOnClickListener {
+        binding.aboutContent.websiteInfo?.setOnClickListener {
             openUrl("https://branex.ir")
         }
-        binding.aboutContent.telegramInfo.setOnClickListener {
+        binding.aboutContent.telegramInfo?.setOnClickListener {
             openUrl("https://t.me/branex_ir")
         }
-        binding.aboutContent.twitterInfo.setOnClickListener {
+        binding.aboutContent.twitterInfo?.setOnClickListener {
             openUrl("https://x.com/branex_ir")
         }
-        binding.aboutContent.instagramInfo.setOnClickListener {
+        binding.aboutContent.instagramInfo?.setOnClickListener {
             openUrl("https://www.instagram.com/branex_ir")
         }
 
