@@ -116,6 +116,12 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
+        android:id="@+id/action_online"
+        android:name="code.name.monkey.retromusic.fragments.online.OnlineFragment"
+        android:label="@string/online"
+        tools:layout="@layout/fragment_online" />
+
+    <fragment
         android:id="@+id/user_info_fragment"
         android:name="code.name.monkey.retromusic.fragments.other.UserInfoFragment" />
 
