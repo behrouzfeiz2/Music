@@ -15,10 +15,10 @@ import java.util.concurrent.ConcurrentHashMap
 object LastFmCatalogApi {
     private val imageCache = ConcurrentHashMap<String, String>()
 
-    suspend fun findArtistImage(name: String): String? =
+    suspend fun findArtistImage(name: String, forceRefresh: Boolean = false): String? =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val key = normalize(name)
-            imageCache[key]?.let { return@withContext it }
+            if (!forceRefresh) imageCache[key]?.let { return@withContext it }
 
             val preferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
             val apiKey = preferences.getString("lastfm_api_key", null)
