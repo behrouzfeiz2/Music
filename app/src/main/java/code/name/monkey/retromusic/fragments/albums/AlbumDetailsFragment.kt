@@ -35,7 +35,6 @@ import code.name.monkey.appthemehelper.util.ToolbarContentTintHelper
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.EXTRA_ARTIST_NAME
 import code.name.monkey.retromusic.EXTRA_ARTIST_ID
-import code.name.monkey.retromusic.EXTRA_ARTIST_NAME
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.activities.tageditor.AbsTagEditorActivity
 import code.name.monkey.retromusic.activities.tageditor.AlbumTagEditorActivity
@@ -190,18 +189,25 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
 
     private fun sortAlbumSongs(songs: List<code.name.monkey.retromusic.model.Song>): List<code.name.monkey.retromusic.model.Song> {
         if (arguments.extraArtistName.isNullOrBlank()) return songs
-        return songs.sortedWith(
-            compareBy<code.name.monkey.retromusic.model.Song> { song ->
-                when {
-                    song.trackNumber > 0 -> song.trackNumber
-                    Regex("^\\\\s*(\\\\d+)").find(java.io.File(song.data).name)
-                        ?.groupValues?.getOrNull(1)?.toIntOrNull() != null ->
-                        Regex("^\\\\s*(\\\\d+)").find(java.io.File(song.data).name)
+        return when (savedSortOrder) {
+            SONG_TRACK_LIST -> songs.sortedWith(
+                compareBy<code.name.monkey.retromusic.model.Song> { song ->
+                    when {
+                        song.trackNumber > 0 -> song.trackNumber
+                        else -> Regex("^\\s*(\\d+)").find(java.io.File(song.data).name)
                             ?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Int.MAX_VALUE
-                    else -> Int.MAX_VALUE
-                }
-            }.thenBy { java.io.File(it.data).name.lowercase(java.util.Locale.ROOT) }
-        )
+                    }
+                }.thenBy { java.io.File(it.data).name.lowercase(java.util.Locale.ROOT) }
+            )
+            SONG_A_Z -> songs.sortedWith { left, right ->
+                Collator.getInstance().compare(left.title, right.title)
+            }
+            SONG_Z_A -> songs.sortedWith { left, right ->
+                Collator.getInstance().compare(right.title, left.title)
+            }
+            SONG_DURATION -> songs.sortedBy { it.duration }
+            else -> songs
+        }
     }
 
     private fun showAlbum(album: Album) {
