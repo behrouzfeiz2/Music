@@ -11,6 +11,7 @@ import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.PreferenceUtil
 import java.io.File
 import java.text.Collator
+import java.util.Locale
 import kotlin.math.abs
 import android.util.Base64
 
@@ -73,6 +74,7 @@ object FolderArtistRepository {
 
     private fun buildArtist(folderPath: String, tracks: List<Song>): Artist? {
         if (tracks.isEmpty()) return null
+        val collator = Collator.getInstance()
         val albums = tracks.mapNotNull { song ->
             location(song.data)?.let { it.albumPath to Pair(it.albumName, song) }
         }.groupBy({ it.first }, { it.second })
@@ -87,11 +89,37 @@ object FolderArtistRepository {
                 }
                 Album(
                     -(abs(albumPath.hashCode().toLong()) + 1L),
-                    remappedSongs
+                    sortTracksByFolderOrder(remappedSongs)
                 )
             }
+            .sortedWith { left, right -> collator.compare(left.title, right.title) }
         if (albums.isEmpty()) return null
         return Artist(folderPath.hashCode().toLong(), albums, true)
+    }
+
+    /**
+     * Prefer embedded track numbers; fall back to a leading number in the file name,
+     * then use the file name as a stable natural-ish tie breaker.
+     */
+    private fun sortTracksByFolderOrder(songs: List<Song>): List<Song> {
+        fun fileNumber(song: Song): Int {
+            val match = Regex("^\\s*(\\d+)").find(File(song.data).name)
+            return match?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Int.MAX_VALUE
+        }
+        return songs.sortedWith(
+            compareBy<Song> { song ->
+                when {
+                    song.trackNumber > 0 -> song.trackNumber
+                    fileNumber(song) != Int.MAX_VALUE -> fileNumber(song)
+                    else -> Int.MAX_VALUE
+                }
+            }.thenBy { File(it.data).name.lowercase(Locale.ROOT) }
+        )
+    }
+
+    fun albumForFolderKey(songs: List<Song>, key: String, albumId: Long): Album? {
+        val artist = artistForKey(songs, key) ?: return null
+        return artist.albums.firstOrNull { it.id == albumId }
     }
 
     private fun location(filePath: String): TrackLocation? {
