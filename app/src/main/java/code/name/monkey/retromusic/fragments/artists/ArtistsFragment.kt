@@ -39,10 +39,10 @@ import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.music.smartplaylist.SmartPlaylistEngine
 import code.name.monkey.retromusic.network.LastFMService
 import code.name.monkey.retromusic.network.SpotifyCatalogApi
-import code.name.monkey.retromusic.BuildConfig
 import code.name.monkey.retromusic.extensions.showToast
 import code.name.monkey.retromusic.service.MusicService
 import code.name.monkey.retromusic.util.PreferenceUtil
+import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import code.name.monkey.retromusic.util.RetroUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -76,9 +76,10 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
     private fun loadSpotifyArtistCovers(artists: List<code.name.monkey.retromusic.model.Artist>) {
         spotifyCoversJob?.cancel()
         val progress = spotifyProgressBar ?: return
-        if (BuildConfig.SPOTIFY_CLIENT_ID.isBlank() ||
-            BuildConfig.SPOTIFY_CLIENT_SECRET.isBlank() || artists.isEmpty()
-        ) {
+        val preferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val hasCredentials = !preferences.getString("spotify_client_id", "").isNullOrBlank() &&
+            !preferences.getString("spotify_client_secret", "").isNullOrBlank()
+        if (!hasCredentials || artists.isEmpty()) {
             progress.isVisible = false
             return
         }
@@ -86,21 +87,27 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
         progress.progress = 0
         progress.isVisible = true
         spotifyCoversJob = viewLifecycleOwner.lifecycleScope.launch {
-            val imageUrls = linkedMapOf<String, String>()
-            val semaphore = Semaphore(3)
+            val imageUtil = CustomArtistImageUtil.getInstance(requireContext())
+            val semaphore = Semaphore(2)
             coroutineScope {
-                val lookups = artists.map { artist ->
+                val downloads = artists.map { artist ->
                     async {
                         semaphore.withPermit {
-                            runCatching { SpotifyCatalogApi.findArtistImage(artist.name) }.getOrNull()
+                            if (imageUtil.hasCustomArtistImage(artist) ||
+                                imageUtil.hasSpotifyArtistImage(artist)
+                            ) return@withPermit false
+                            val imageUrl = runCatching {
+                                SpotifyCatalogApi.findArtistImage(artist.name)
+                            }.getOrNull() ?: return@withPermit false
+                            runCatching {
+                                imageUtil.cacheSpotifyArtistImage(artist, imageUrl)
+                            }.getOrDefault(false)
                         }
                     }
                 }
-                lookups.forEachIndexed { index, lookup ->
-                    val imageUrl = lookup.await()
-                    if (!imageUrl.isNullOrBlank()) {
-                        imageUrls[artists[index].name] = imageUrl
-                        (adapter as? ArtistAdapter)?.setSpotifyImageUrls(imageUrls.toMap())
+                downloads.forEachIndexed { index, download ->
+                    if (download.await()) {
+                        (adapter as? ArtistAdapter)?.notifyItemChanged(index)
                     }
                     progress.progress = index + 1
                 }
