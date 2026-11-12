@@ -12,6 +12,7 @@ import code.name.monkey.retromusic.db.toSongsEntity
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.network.LastFMService
 import code.name.monkey.retromusic.repository.RealRepository
+import java.io.File
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -20,7 +21,7 @@ import org.koin.core.component.get
  * Only tracks already present in the selected local folders are inserted.
  */
 object BestOfSelectionHelper : KoinComponent {
-    suspend fun createPlaylist(context: Context, localSongs: List<Song>): Pair<String, Int> {
+    suspend fun createPlaylist(context: Context, artistFolders: List<File>, localSongs: List<Song>): Pair<String, Int> {
         require(localSongs.isNotEmpty()) { context.getString(R.string.smart_playlist_empty) }
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -33,6 +34,7 @@ object BestOfSelectionHelper : KoinComponent {
         val lastFm = get<LastFMService>()
         val lastFmRankedSongs = SmartPlaylistEngine.buildLastFmMix(
             localSongs = localSongs,
+            artistFolders = artistFolders,
             lastFm = lastFm,
             maxSongs = 50,
             apiKey = apiKey
