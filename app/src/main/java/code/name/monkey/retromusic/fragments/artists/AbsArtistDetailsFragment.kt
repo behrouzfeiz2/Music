@@ -197,13 +197,15 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             if (profile != null) {
                 renderSpotifyCatalog(profile, currentArtist)
                 profile.imageUrl?.let { imageUrl ->
-                    binding.image.scaleType = ImageView.ScaleType.CENTER_CROP
-                    Glide.with(requireContext())
-                        .load(imageUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
-                        .dontTransform()
-                        .into(binding.image)
+                    val imageUtil = CustomArtistImageUtil.getInstance(requireContext())
+                    if (!imageUtil.hasCustomArtistImage(currentArtist) &&
+                        !imageUtil.hasSpotifyArtistImage(currentArtist)
+                    ) {
+                        imageUtil.cacheSpotifyArtistImage(currentArtist, imageUrl)
+                    }
+                    if (_binding != null) {
+                        loadArtistImage(currentArtist)
+                    }
                 }
             }
         }
