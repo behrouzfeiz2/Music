@@ -26,6 +26,7 @@ import code.name.monkey.retromusic.fragments.search.Filter
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.interfaces.IMusicServiceEventListener
 import code.name.monkey.retromusic.model.*
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.repository.RealRepository
 import code.name.monkey.retromusic.util.DensityUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
@@ -98,7 +99,9 @@ class LibraryViewModel(
 
     fun getArtists(): LiveData<List<Artist>> = artists
 
-    suspend fun getArtistsForArtworkRebuild(): List<Artist> = repository.fetchArtists()
+    // Artist identity follows Music/<artist>/<album>/<track>, not audio tags.
+    suspend fun getArtistsForArtworkRebuild(): List<Artist> =
+        FolderArtistRepository.artists(repository.allSongs())
 
     fun getPlaylists(): LiveData<List<PlaylistWithSongs>> = playlists
 
