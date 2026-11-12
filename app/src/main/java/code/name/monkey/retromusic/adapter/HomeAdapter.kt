@@ -193,11 +193,12 @@ class HomeAdapter(private val activity: AppCompatActivity) :
         LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
 
     override fun onArtist(artistId: Long, view: View) {
-        val topArtist = list.firstOrNull { it.homeSection == TOP_ARTISTS }
-            ?.arrayList
-            ?.filterIsInstance<Artist>()
-            ?.firstOrNull { it.id == artistId }
-        val folderPath = topArtist?.songs?.firstOrNull()?.data
+        val selectedArtist = list
+            .asSequence()
+            .filter { it.homeSection == TOP_ARTISTS || it.homeSection == RECENT_ARTISTS }
+            .flatMap { home -> home.arrayList.asSequence().filterIsInstance<Artist>() }
+            .firstOrNull { it.id == artistId }
+        val folderPath = selectedArtist?.songs?.firstOrNull()?.data
             ?.let { FolderArtistRepository.folderPathForSong(it) }
         if (folderPath != null) {
             val folderKey = FolderArtistRepository.keyForFolder(folderPath)
