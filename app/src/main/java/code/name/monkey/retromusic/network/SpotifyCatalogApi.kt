@@ -15,6 +15,32 @@ data class SpotifyArtistProfile(val name: String, val imageUrl: String?, val spo
 object SpotifyCatalogApi {
     private var accessToken: String? = null
     private var tokenExpiresAt: Long = 0L
+    private val artistImageCache = mutableMapOf<String, String>()
+
+    suspend fun findArtistImage(name: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            artistImageCache[normalize(name)]?.let { return@withContext it }
+            if (BuildConfig.SPOTIFY_CLIENT_ID.isBlank() || BuildConfig.SPOTIFY_CLIENT_SECRET.isBlank()) {
+                return@withContext null
+            }
+            val token = getAccessToken() ?: return@withContext null
+            val query = Uri.encode("artist:\\"$name\\"")
+            val response = getJson("https://api.spotify.com/v1/search?q=$query&type=artist&limit=5", token)
+            val items = response.optJSONObject("artists")?.optJSONArray("items")
+                ?: return@withContext null
+            var selected: JSONObject? = null
+            for (i in 0 until items.length()) {
+                val item = items.optJSONObject(i) ?: continue
+                if (normalize(item.optString("name")) == normalize(name)) {
+                    selected = item
+                    break
+                }
+            }
+            val image = selected?.optJSONArray("images")?.optJSONObject(0)?.optString("url")
+                ?.takeIf { it.isNotBlank() }
+            if (image != null) artistImageCache[normalize(name)] = image
+            image
+        }
 
     suspend fun findArtist(name: String): SpotifyArtistProfile? =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
@@ -76,7 +102,7 @@ object SpotifyCatalogApi {
             )
         }
 
-    private fun getAccessToken(): String? {
+    @Synchronized\n    private fun getAccessToken(): String? {
         val now = System.currentTimeMillis()
         accessToken?.takeIf { now < tokenExpiresAt - 60_000L }?.let { return it }
         val credentials = "${BuildConfig.SPOTIFY_CLIENT_ID}:${BuildConfig.SPOTIFY_CLIENT_SECRET}"
