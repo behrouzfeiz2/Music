@@ -16,6 +16,9 @@
     <string name="best_of_created">پلی‌لیست بهترین‌های %1$s با %2$d آهنگ ساخته شد.</string>
     <string name="developer_credit_title">طراحی و توسعه: بهروز فیض</string>
     <string name="developer_credit_summary">Branex.ir</string>
+    <string name="search_artist_image_google">جستجوی تصویر در گوگل</string>
+    <string name="artist_image_google_help">تصویر موردنظر را در گوگل پیدا و دانلود کنید؛ سپس از همین منو «انتخاب تصویر هنرمند» را بزنید.</string>
+    <string name="artist_image_google_unavailable">باز کردن تصاویر گوگل ممکن نیست.</string>
     <string name="best_of_selection">بهترین‌های فولدرهای انتخاب‌شده (Last.fm)</string>
     <string name="best_of_selection_playlist_name">Best of Selection</string>
     <string name="best_of_selection_building">در حال بررسی آهنگ‌های فولدرهای انتخاب‌شده با رتبه‌بندی Last.fm…</string>
