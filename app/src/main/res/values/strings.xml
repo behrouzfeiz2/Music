@@ -17,6 +17,9 @@
     <string name="best_of_created">%1$s Best of created with %2$d tracks.</string>
     <string name="developer_credit_title">Designed and developed by Behrouz Feyz</string>
     <string name="developer_credit_summary">Branex.ir</string>
+    <string name="search_artist_image_google">Search Google Images</string>
+    <string name="artist_image_google_help">Find and download an image, then choose “Set artist image” from this menu.</string>
+    <string name="artist_image_google_unavailable">Could not open Google Images.</string>
     <string name="best_of_selection">Best of Selection (Last.fm)</string>
     <string name="best_of_selection_playlist_name">Best of Selection</string>
     <string name="best_of_selection_building">Checking selected folders against Last.fm rankings…</string>
