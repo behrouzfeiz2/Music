@@ -14,6 +14,7 @@
 package code.name.monkey.retromusic.fragments.folder
 
 import android.content.Context
+import android.content.Intent
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.os.Environment
@@ -43,6 +44,8 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.adapter.SongFileAdapter
 import code.name.monkey.retromusic.adapter.Storage
 import code.name.monkey.retromusic.adapter.StorageAdapter
+import code.name.monkey.retromusic.activities.tageditor.AbsTagEditorActivity
+import code.name.monkey.retromusic.activities.tageditor.AlbumTagEditorActivity
 import code.name.monkey.retromusic.adapter.StorageClickListener
 import code.name.monkey.retromusic.databinding.FragmentFolderBinding
 import code.name.monkey.retromusic.extensions.dip
@@ -429,9 +432,27 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
         lifecycleScope.launch(Dispatchers.IO) {
             listSongs(requireContext(), files, AUDIO_FILE_FILTER, fileComparator) { songs ->
                 if (songs.isNotEmpty()) {
-                    SongsMenuHelper.handleMenuClick(
-                        requireActivity(), songs, itemId
-                    )
+                    if (itemId == R.id.action_tag_editor) {
+                        val albumIds = songs.map { it.albumId }.distinct()
+                        requireActivity().runOnUiThread {
+                            if (albumIds.size == 1 && albumIds.first() > 0L) {
+                                startActivity(
+                                    Intent(requireActivity(), AlbumTagEditorActivity::class.java)
+                                        .putExtra(AbsTagEditorActivity.EXTRA_ID, albumIds.first())
+                                )
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    R.string.tag_editor_select_one_album,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    } else {
+                        SongsMenuHelper.handleMenuClick(
+                            requireActivity(), songs, itemId
+                        )
+                    }
                 }
             }
         }
