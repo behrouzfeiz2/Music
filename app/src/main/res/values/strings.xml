@@ -570,4 +570,5 @@
     <string name="about_telegram">Telegram: branex_ir</string>
     <string name="about_twitter">Twitter: branex_ir</string>
     <string name="about_instagram">Instagram: branex_ir</string>
+    <string name="tag_editor_select_one_album">Select songs from a single album to edit its tags.</string>
 </resources>
