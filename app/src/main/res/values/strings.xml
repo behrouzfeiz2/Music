@@ -184,7 +184,7 @@
     <string name="general_settings_title">Look and feel</string>
     <string name="genre">Genre</string>
     <string name="genres">Genres</string>
-    <string name="git_hub_summary">Fork the project on GitHub</string>
+    <string name="git_hub_summary">View the source code on GitHub</string>
     <string name="gradient">Gradient</string>
     <string name="grant_access">Grant access</string>
     <string name="grid_size_1">1</string>
@@ -237,7 +237,7 @@
     <string name="message_limit_tabs">Not more than 5 items</string>
     <string name="message_restore_success">Restore completed successfully.</string>
     <string name="message_updated">Updated</string>
-    <string name="message_welcome"><![CDATA[Hello there! <br>Welcome to %s]]></string>
+    <string name="message_welcome"><![CDATA[Hello there! <br>Welcome to Music]]></string>
     <string name="my_name">Name</string>
     <string name="my_top_tracks">Most played</string>
     <string name="never">Never</string>
