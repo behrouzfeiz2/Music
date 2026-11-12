@@ -1,6 +1,8 @@
 package code.name.monkey.retromusic.network
 
 import android.net.Uri
+import androidx.preference.PreferenceManager
+import code.name.monkey.retromusic.App
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -18,8 +20,13 @@ object LastFmCatalogApi {
             val key = normalize(name)
             imageCache[key]?.let { return@withContext it }
 
+            val preferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
+            val apiKey = preferences.getString("lastfm_api_key", null)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: LastFMService.API_KEY
             val endpoint = "https://ws.audioscrobbler.com/2.0/?method=artist.getinfo" +
-                "&artist=${Uri.encode(name)}&api_key=${LastFMService.API_KEY}&format=json&autocorrect=1"
+                "&artist=${Uri.encode(name)}&api_key=${Uri.encode(apiKey)}&format=json&autocorrect=1"
 
             var attempt = 0
             while (true) {
