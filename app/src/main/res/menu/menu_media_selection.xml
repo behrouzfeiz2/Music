@@ -33,6 +33,11 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_best_of_selection"
+        android:title="@string/best_of_selection"
+        app:showAsAction="never" />
+
+    <item
         android:id="@id/action_multi_select_adapter_check_all"
         android:icon="@drawable/ic_select_all"
         android:title="@string/select_all"
