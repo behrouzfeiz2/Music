@@ -96,7 +96,7 @@ class LibraryViewModel(
 
     fun getAlbums(): LiveData<List<Album>> = albums
 
-    fun getArtists(): LiveData<List<Artist>> = artists
+    fun getArtists(): LiveData<List<Artist>> = artists\n\n    suspend fun getArtistsForSpotifyRebuild(): List<Artist> = repository.fetchArtists()
 
     fun getPlaylists(): LiveData<List<PlaylistWithSongs>> = playlists
 
