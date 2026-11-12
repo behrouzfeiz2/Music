@@ -265,6 +265,16 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         showScanDialogSheet(file)
                         return@setOnMenuItemClickListener true
                     }
+
+                    R.id.action_tag_editor -> {
+                        lifecycleScope.launch {
+                            val songs = withContext(Dispatchers.IO) {
+                                FolderSongSelector.songsInFiles(listOf(file))
+                            }
+                            openTagEditor(songs)
+                        }
+                        return@setOnMenuItemClickListener true
+                    }
                 }
                 false
             }
