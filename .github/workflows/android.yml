@@ -39,6 +39,10 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+      - name: Validate signing secrets
+        run: |
+          test -n "$SIGNING_KEYSTORE_GITHUB" || { echo "Missing SIGNING_KEYSTORE_GITHUB secret"; exit 1; }
+          test -n "$SIGNING_PROPERTIES_GITHUB" || { echo "Missing SIGNING_PROPERTIES_GITHUB secret"; exit 1; }
       - name: Setup stable APK signing
         run: |
           ./ci_signing_setup.sh
