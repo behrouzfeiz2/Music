@@ -101,6 +101,12 @@ class PlaylistAdapter(
         holder.itemView.isActivated = isChecked(playlist)
         holder.title?.text = getPlaylistTitle(playlist.playlistEntity)
         holder.text?.text = getPlaylistText(playlist)
+        holder.itemView.findViewById<View>(R.id.dailyMixLabel)?.visibility =
+            if (playlist.playlistEntity.playlistName.startsWith("Daily Mix", ignoreCase = true)) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
         holder.menu?.isGone = isChecked(playlist)
         if (itemLayoutRes == R.layout.item_list) {
             holder.image?.setPadding(activity.dipToPix(8F).toInt())
