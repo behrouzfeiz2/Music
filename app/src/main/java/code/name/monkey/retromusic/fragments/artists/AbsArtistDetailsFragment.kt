@@ -44,6 +44,7 @@ import code.name.monkey.retromusic.glide.SingleColorTarget
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.helper.SortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
+import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.SpotifyAlbum
@@ -129,7 +130,10 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     }
 
     private fun setupRecyclerView() {
-        albumAdapter = AlbumAdapter(requireActivity(), ArrayList(), R.layout.item_list, this)
+        albumAdapter = object : AlbumAdapter(requireActivity(), ArrayList(), R.layout.item_list, this) {
+            override fun getAlbumText(album: Album): String =
+                MusicUtil.getYearString(album.year)
+        }
         binding.fragmentArtistContent.albumRecyclerView.apply {
             itemAnimator = DefaultItemAnimator()
             layoutManager = LinearLayoutManager(this.context)
