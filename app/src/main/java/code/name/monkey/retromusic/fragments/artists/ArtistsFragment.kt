@@ -143,31 +143,49 @@ class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, Gri
     }
 
     private fun makeBestOf(artist: code.name.monkey.retromusic.model.Artist) {
-        val songs = artist.songs
-        if (songs.isEmpty()) {
+        val localSongs = artist.songs.distinctBy { it.id }
+        if (localSongs.isEmpty()) {
             requireContext().showToast(getString(R.string.smart_playlist_empty))
             return
         }
+
+        val playlistName = getString(R.string.best_of_playlist_name, artist.name)
+        val lastFm = get<LastFMService>()
         requireContext().showToast(getString(R.string.best_of_building, artist.name))
+
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    SmartPlaylistEngine.buildArtistBestOf(songs, artist.name, get<LastFMService>())
+                    SmartPlaylistEngine.buildArtistBestOf(
+                        localSongs,
+                        artist.name,
+                        lastFm
+                    )
                 }
             }
+
             if (!isAdded) return@launch
             val bestOf = result.getOrNull()
-            if (bestOf == null) {
-                requireContext().showToast(getString(R.string.smart_playlist_failed))
-            } else if (bestOf.isEmpty()) {
-                requireContext().showToast(getString(R.string.best_of_empty, artist.name))
-            } else {
-                libraryViewModel.addToPlaylist(
-                    requireContext(),
-                    getString(R.string.best_of_playlist_name, artist.name),
-                    bestOf
-                )
-                requireContext().showToast(getString(R.string.best_of_created, artist.name, bestOf.size))
+            when {
+                bestOf == null -> {
+                    requireContext().showToast(getString(R.string.smart_playlist_failed))
+                }
+                bestOf.isEmpty() -> {
+                    requireContext().showToast(getString(R.string.best_of_empty, artist.name))
+                }
+                else -> {
+                    runCatching {
+                        libraryViewModel.replacePlaylistContents(
+                            requireContext(),
+                            playlistName,
+                            bestOf
+                        )
+                    }.onFailure {
+                        if (isAdded) {
+                            requireContext().showToast(getString(R.string.smart_playlist_failed))
+                        }
+                    }
+                }
             }
         }
     }
