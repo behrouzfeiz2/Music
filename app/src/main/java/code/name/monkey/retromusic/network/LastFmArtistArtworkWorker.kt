@@ -37,7 +37,7 @@ class LastFmArtistArtworkWorker(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            return@withLock androidx.work.ListenableWorker.androidx.work.ListenableWorker.Result.retry()
+            return@withLock androidx.work.ListenableWorker.Result.retry()
         }
 
         val preferences = applicationContext.getSharedPreferences(
@@ -52,7 +52,7 @@ class LastFmArtistArtworkWorker(
             .take(BATCH_SIZE)
             .toList()
 
-        if (pending.isEmpty()) return@withLock androidx.work.ListenableWorker.androidx.work.ListenableWorker.Result.success()
+        if (pending.isEmpty()) return@withLock androidx.work.ListenableWorker.Result.success()
 
         val imageUtil = CustomArtistImageUtil.getInstance(applicationContext)
         pending.forEachIndexed { index, artist ->
