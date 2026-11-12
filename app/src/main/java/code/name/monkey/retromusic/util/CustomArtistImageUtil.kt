@@ -92,7 +92,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
     }
 
-    suspend fun cacheSpotifyArtistImage(artist: Artist, imageUrl: String): Boolean =
+    suspend fun cacheLastFmArtistImage(artist: Artist, imageUrl: String): Boolean =
         withContext(IO) {
             runCatching {
                 val context = App.getContext()
@@ -103,9 +103,9 @@ class CustomArtistImageUtil private constructor(context: Context) {
                     .skipMemoryCache(true)
                     .submit()
                     .get()
-                val dir = File(context.filesDir, SPOTIFY_FOLDER_NAME)
+                val dir = File(context.filesDir, LASTFM_FOLDER_NAME)
                 if (!dir.exists() && !dir.mkdirs()) return@withContext false
-                val file = getSpotifyFile(artist)
+                val file = getLastFmFile(artist)
                 val saved = file.outputStream().buffered().use { output ->
                     ImageUtil.resizeBitmap(bitmap, 2048)
                         .compress(Bitmap.CompressFormat.JPEG, 92, output)
@@ -136,7 +136,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
     }
 
-    fun hasSpotifyArtistImage(artist: Artist): Boolean = getSpotifyFile(artist).exists()
+    fun hasLastFmArtistImage(artist: Artist): Boolean = getSpotifyFile(artist).exists()
 
     // shared prefs saves us many IO operations
     fun hasCustomArtistImage(artist: Artist): Boolean {
@@ -146,7 +146,7 @@ class CustomArtistImageUtil private constructor(context: Context) {
     companion object {
         private const val CUSTOM_ARTIST_IMAGE_PREFS = "custom_artist_image"
         private const val FOLDER_NAME = "/custom_artist_images/"
-        private const val SPOTIFY_FOLDER_NAME = "/spotify_artist_images/"
+        private const val SPOTIFY_FOLDER_NAME = "/lastfm_artist_images/"
 
         private var sInstance: CustomArtistImageUtil? = null
 
