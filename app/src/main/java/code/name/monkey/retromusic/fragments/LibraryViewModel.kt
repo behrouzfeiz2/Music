@@ -277,10 +277,9 @@ class LibraryViewModel(
     }
 
     fun playCountSongs(): LiveData<List<Song>> {
-        if (playCountSongsData.value == null) {
-            viewModelScope.launch(IO) {
-                fetchPlayCountSongs()
-            }
+        // Refresh each time the Most Played screen is opened.
+        viewModelScope.launch(IO) {
+            fetchPlayCountSongs()
         }
         return playCountSongsData
     }
