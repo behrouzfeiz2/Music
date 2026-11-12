@@ -20,6 +20,7 @@ import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getFile
 import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getLastFmFile
 import code.name.monkey.retromusic.util.CustomArtistImageUtil.Companion.getInstance
 import code.name.monkey.retromusic.util.MusicUtil.getMediaStoreAlbumCoverUri
+import code.name.monkey.retromusic.network.LastFmAlbumArtworkLoader
 import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.Priority
@@ -52,6 +53,9 @@ object RetroGlideExtension {
     }
 
     private fun getSongModel(song: Song, ignoreMediaStore: Boolean): Any {
+        LastFmAlbumArtworkLoader.getCachedFile(song.artistName, song.albumName)?.let {
+            return it
+        }
         return if (ignoreMediaStore) {
             AudioFileCover(song.data)
         } else {

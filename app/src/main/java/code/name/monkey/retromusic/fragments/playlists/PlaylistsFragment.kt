@@ -32,7 +32,7 @@ import code.name.monkey.retromusic.fragments.base.AbsRecyclerViewCustomGridSizeF
 import code.name.monkey.retromusic.helper.SortOrder.PlaylistSortOrder
 import code.name.monkey.retromusic.interfaces.IPlaylistClickListener
 import code.name.monkey.retromusic.util.PreferenceUtil
-import code.name.monkey.retromusic.util.RetroUtil
+import code.name.monkey.retromusic.util.PlaylistPinStore
 import com.google.android.material.transition.MaterialSharedAxis
 import kotlinx.coroutines.launch
 
@@ -42,11 +42,13 @@ class PlaylistsFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        libraryViewModel.getPlaylists().observe(viewLifecycleOwner) {
-            if (it.isNotEmpty())
-                adapter?.swapDataSet(it)
-            else
-                adapter?.swapDataSet(listOf())
+        libraryViewModel.getPlaylists().observe(viewLifecycleOwner) { playlists ->
+            PlaylistPinStore.retainExisting(
+                requireContext(),
+                playlists.map { it.playlistEntity.playListId }
+            )
+            adapter?.setPinnedPlaylistIds(PlaylistPinStore.getPinnedIds(requireContext()))
+            adapter?.swapDataSet(playlists)
         }
     }
 
@@ -60,7 +62,8 @@ class PlaylistsFragment :
         get() = false
 
     override fun createLayoutManager(): GridLayoutManager {
-        return GridLayoutManager(requireContext(), getGridSize())
+        // Keep the Spotify-inspired library grid consistent in portrait and landscape.
+        return GridLayoutManager(requireContext(), 3)
     }
 
     override fun createAdapter(): PlaylistAdapter {
@@ -70,16 +73,28 @@ class PlaylistsFragment :
             dataSet,
             itemLayoutRes(),
             this
-        )
+        ) { playlist ->
+            when (PlaylistPinStore.toggle(
+                requireContext(),
+                playlist.playlistEntity.playListId
+            )) {
+                PlaylistPinStore.ToggleResult.PINNED,
+                PlaylistPinStore.ToggleResult.UNPINNED -> {
+                    adapter?.setPinnedPlaylistIds(PlaylistPinStore.getPinnedIds(requireContext()))
+                }
+                PlaylistPinStore.ToggleResult.LIMIT_REACHED -> {
+                    showToast(R.string.playlist_pin_limit_reached)
+                }
+            }
+        }.also {
+            it.setPinnedPlaylistIds(PlaylistPinStore.getPinnedIds(requireContext()))
+        }
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateMenu(menu, inflater)
-        val gridSizeItem: MenuItem = menu.findItem(R.id.action_grid_size)
-        if (RetroUtil.isLandscape) {
-            gridSizeItem.setTitle(R.string.action_grid_size_land)
-        }
-        setupGridSizeMenu(gridSizeItem.subMenu!!)
+        // Playlist tiles use a fixed three-column layout; hide the generic grid-size control.
+        menu.removeItem(R.id.action_grid_size)
         menu.removeItem(R.id.action_layout_type)
         menu.add(0, R.id.action_add_to_playlist, 0, R.string.new_playlist_title)
         menu.add(0, R.id.action_import_playlist, 0, R.string.import_playlist)
@@ -91,45 +106,10 @@ class PlaylistsFragment :
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
-        if (handleGridSizeMenuItem(item)) {
-            return true
-        }
         if (handleSortOrderMenuItem(item)) {
             return true
         }
         return super.onMenuItemSelected(item)
-    }
-
-    private fun setupGridSizeMenu(gridSizeMenu: SubMenu) {
-        when (getGridSize()) {
-            1 -> gridSizeMenu.findItem(R.id.action_grid_size_1).isChecked = true
-            2 -> gridSizeMenu.findItem(R.id.action_grid_size_2).isChecked = true
-            3 -> gridSizeMenu.findItem(R.id.action_grid_size_3).isChecked = true
-            4 -> gridSizeMenu.findItem(R.id.action_grid_size_4).isChecked = true
-            5 -> gridSizeMenu.findItem(R.id.action_grid_size_5).isChecked = true
-            6 -> gridSizeMenu.findItem(R.id.action_grid_size_6).isChecked = true
-            7 -> gridSizeMenu.findItem(R.id.action_grid_size_7).isChecked = true
-            8 -> gridSizeMenu.findItem(R.id.action_grid_size_8).isChecked = true
-        }
-        val gridSize = if (RetroUtil.isLandscape) 4 else 3
-        if (gridSize < 8) {
-            gridSizeMenu.findItem(R.id.action_grid_size_8).isVisible = false
-        }
-        if (gridSize < 7) {
-            gridSizeMenu.findItem(R.id.action_grid_size_7).isVisible = false
-        }
-        if (gridSize < 6) {
-            gridSizeMenu.findItem(R.id.action_grid_size_6).isVisible = false
-        }
-        if (gridSize < 5) {
-            gridSizeMenu.findItem(R.id.action_grid_size_5).isVisible = false
-        }
-        if (gridSize < 4) {
-            gridSizeMenu.findItem(R.id.action_grid_size_4).isVisible = false
-        }
-        if (gridSize < 3) {
-            gridSizeMenu.findItem(R.id.action_grid_size_3).isVisible = false
-        }
     }
 
     private fun setUpSortOrderMenu(subMenu: SubMenu) {
@@ -218,25 +198,15 @@ class PlaylistsFragment :
         PreferenceUtil.playlistSortOrder = sortOrder
     }
 
-    override fun loadGridSize(): Int {
-        return PreferenceUtil.playlistGridSize
-    }
+    override fun loadGridSize(): Int = 3
 
-    override fun saveGridSize(gridColumns: Int) {
-        PreferenceUtil.playlistGridSize = gridColumns
-    }
+    override fun saveGridSize(gridColumns: Int) = Unit
 
-    override fun loadGridSizeLand(): Int {
-        return PreferenceUtil.playlistGridSizeLand
-    }
+    override fun loadGridSizeLand(): Int = 3
 
-    override fun saveGridSizeLand(gridColumns: Int) {
-        PreferenceUtil.playlistGridSizeLand = gridColumns
-    }
+    override fun saveGridSizeLand(gridColumns: Int) = Unit
 
-    override fun loadLayoutRes(): Int {
-        return R.layout.item_grid
-    }
+    override fun loadLayoutRes(): Int = R.layout.item_playlist_library
 
     override fun saveLayoutRes(layoutRes: Int) {
         //Save layout

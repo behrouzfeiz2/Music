@@ -15,12 +15,15 @@
 package code.name.monkey.retromusic.adapter.album
 
 import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.adapter.base.AbsMultiSelectAdapter
 import code.name.monkey.retromusic.adapter.base.MediaEntryViewHolder
@@ -33,11 +36,13 @@ import code.name.monkey.retromusic.helper.menu.SongsMenuHelper
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Song
+import code.name.monkey.retromusic.network.LastFmAlbumArtworkLoader
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.color.MediaNotificationProcessor
 import com.bumptech.glide.Glide
 import me.zhanghai.android.fastscroll.PopupTextProvider
+import kotlinx.coroutines.launch
 
 open class AlbumAdapter(
     override val activity: FragmentActivity,
@@ -108,18 +113,45 @@ open class AlbumAdapter(
     }
 
     protected open fun loadAlbumCover(album: Album, holder: ViewHolder) {
-        if (holder.image == null) {
-            return
-        }
+        val imageView = holder.image ?: return
         val song = album.safeGetFirstSong()
+        val cachedArtwork = LastFmAlbumArtworkLoader.getCachedFile(song.artistName, song.albumName)
+        val source = cachedArtwork ?: RetroGlideExtension.getSongModel(song)
+        displayAlbumCover(album, song, holder, imageView, source, cachedArtwork == null)
+    }
+
+    private fun displayAlbumCover(
+        album: Album,
+        song: Song,
+        holder: ViewHolder,
+        imageView: android.widget.ImageView,
+        source: Any,
+        lookupOnFailure: Boolean
+    ) {
         Glide.with(activity)
             .asBitmapPalette()
             .albumCoverOptions(song)
-            //.checkIgnoreMediaStore()
-            .load(RetroGlideExtension.getSongModel(song))
-            .into(object : RetroMusicColoredTarget(holder.image!!) {
+            .load(source)
+            .into(object : RetroMusicColoredTarget(imageView) {
                 override fun onColorReady(colors: MediaNotificationProcessor) {
                     setColors(colors, holder)
+                }
+
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    super.onLoadFailed(errorDrawable)
+                    if (!lookupOnFailure) return
+                    if (holder.bindingAdapterPosition == RecyclerView.NO_POSITION) return
+
+                    activity.lifecycleScope.launch {
+                        val file = LastFmAlbumArtworkLoader.load(album.artistName, album.title)
+                            ?: return@launch
+                        val position = holder.bindingAdapterPosition
+                        if (position == RecyclerView.NO_POSITION ||
+                            dataSet.getOrNull(position)?.id != album.id
+                        ) return@launch
+
+                        displayAlbumCover(album, song, holder, imageView, file, false)
+                    }
                 }
             })
     }

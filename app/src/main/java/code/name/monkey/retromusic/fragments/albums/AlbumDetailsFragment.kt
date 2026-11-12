@@ -15,6 +15,7 @@
 package code.name.monkey.retromusic.fragments.albums
 
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +56,7 @@ import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.network.LastFmAlbumArtworkLoader
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmAlbum
 import code.name.monkey.retromusic.repository.RealRepository
@@ -318,14 +320,37 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
     }
 
     private fun loadAlbumCover(album: Album) {
+        val song = album.safeGetFirstSong()
+        val cachedArtwork = LastFmAlbumArtworkLoader.getCachedFile(song.artistName, song.albumName)
+        val source = cachedArtwork ?: RetroGlideExtension.getSongModel(song)
+        displayAlbumCover(album, song, source, cachedArtwork == null)
+    }
+
+    private fun displayAlbumCover(
+        album: Album,
+        song: code.name.monkey.retromusic.model.Song,
+        source: Any,
+        lookupOnFailure: Boolean
+    ) {
         Glide.with(requireContext())
             .asBitmapPalette()
-            .albumCoverOptions(album.safeGetFirstSong())
-            //.checkIgnoreMediaStore()
-            .load(RetroGlideExtension.getSongModel(album.safeGetFirstSong()))
+            .albumCoverOptions(song)
+            .load(source)
             .into(object : SingleColorTarget(binding.image) {
                 override fun onColorReady(color: Int) {
                     setColors(color)
+                }
+
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    super.onLoadFailed(errorDrawable)
+                    if (!lookupOnFailure || _binding == null) return
+                    lifecycleScope.launch {
+                        val file = LastFmAlbumArtworkLoader.load(album.artistName, album.title)
+                            ?: return@launch
+                        if (_binding != null && this@AlbumDetailsFragment.album.id == album.id) {
+                            displayAlbumCover(album, song, file, false)
+                        }
+                    }
                 }
             })
     }

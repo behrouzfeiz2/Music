@@ -36,7 +36,7 @@
     <string name="smart_playlist_empty">No songs were found in the selected folders.</string>
     <string name="smart_playlist_failed">Could not create the playlist. Please try again.</string>
     <string name="lastfm_api_key_title">Last.fm API key</string>
-    <string name="lastfm_api_key_summary">Enter the API key from your Last.fm account. This key is used to retrieve artist images.</string>
+    <string name="lastfm_api_key_summary">Enter the API key from your Last.fm account. It is used to retrieve missing artist and album artwork.</string>
     <string name="lastfm_shared_secret_title">Last.fm shared secret</string>
     <string name="lastfm_shared_secret_summary">Optional. Saved on this device for future Last.fm features; artist image lookup does not require it.</string>
     <string name="lastfm_artwork_title">Artist artwork (Last.fm)</string>
@@ -571,4 +571,8 @@
     <string name="about_twitter">Twitter: branex_ir</string>
     <string name="about_instagram">Instagram: branex_ir</string>
     <string name="tag_editor_select_one_album">Select songs from a single album to edit its tags.</string>
+    <string name="pin_playlist">Pin to top</string>
+    <string name="unpin_playlist">Unpin from top</string>
+    <string name="playlist_pin_limit_reached">You can pin up to 4 playlists.</string>
+    <string name="pinned_playlist_content_description">Pinned playlist</string>
 </resources>
