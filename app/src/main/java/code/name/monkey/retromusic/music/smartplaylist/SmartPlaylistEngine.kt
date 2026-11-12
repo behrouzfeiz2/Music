@@ -65,6 +65,21 @@ object SmartPlaylistEngine {
         ).distinctBy { it.song.id }.take(maxSongs).map { it.song }
     }
 
+    suspend fun buildArtistBestOf(
+        localSongs: List<Song>,
+        artistName: String,
+        lastFm: LastFMService,
+        maxSongs: Int = 30
+    ): List<Song> {
+        if (localSongs.isEmpty()) return emptyList()
+        val response = lastFm.artistTopTracks(artistName, 50)
+        return parseMatches(response, artistName, localSongs, 0)
+            .sortedByDescending { it.playCount }
+            .distinctBy { it.song.id }
+            .take(maxSongs)
+            .map { it.song }
+    }
+
     private fun parseMatches(
         response: JsonObject,
         folderArtist: String,
