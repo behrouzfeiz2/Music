@@ -125,39 +125,6 @@
         tools:listitem="@layout/item_song" />
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/biographyTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/biography"
-        android:textAppearance="@style/TextViewHeadline6"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recyclerView"
-        tools:visibility="visible" />
-
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/biographyText"
-        style="@style/TextAppearance.MaterialComponents.Body1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:lineSpacingExtra="5dp"
-        android:maxLines="4"
-        android:padding="16dp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/biographyTitle"
-        tools:text="@string/bug_report_summary"
-        tools:visibility="visible" />
-
-    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/listenersLabel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -170,7 +137,7 @@
         android:visibility="gone"
         app:layout_constrainedWidth="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/biographyText"
+        app:layout_constraintTop_toBottomOf="@id/recyclerView"
         tools:visibility="visible" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -188,7 +155,7 @@
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/listenersLabel"
-        app:layout_constraintTop_toBottomOf="@id/biographyText"
+        app:layout_constraintTop_toBottomOf="@id/recyclerView"
         tools:visibility="visible" />
 
     <com.google.android.material.textview.MaterialTextView
