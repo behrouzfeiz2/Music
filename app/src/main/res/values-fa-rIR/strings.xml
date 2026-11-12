@@ -517,6 +517,12 @@
     <string name="scan_complete">Scan complete: %1$d media items found.</string>
     <string name="pref_save_last_directory_summary">هنگام تغییر به نمای پوشه، آخرین فهرست استفاده شده را بازیابی کنید</string>
     <string name="pref_save_last_directory_title">ذخیره آخرین فهرست</string>
+    <string name="spotify_rebuild_archive">بازسازی آرشیو موسیقی</string>
+    <string name="spotify_rebuild_summary">اسکن هنرمندان و ذخیره تصاویر از Spotify</string>
+    <string name="spotify_credentials_required">ابتدا Client ID و Client Secret اسپاتیفای را وارد کنید.</string>
+    <string name="spotify_rebuild_starting">در حال آماده‌سازی اسکن آرشیو…</string>
+    <string name="spotify_rebuild_progress">در حال بررسی %1$d از %2$d هنرمند…</string>
+    <string name="spotify_rebuild_complete">اسکن %1$d هنرمند تمام شد؛ تصویر %2$d هنرمند ذخیره شد.</string>
     <string name="spotify_connect">اتصال Spotify</string>
     <string name="spotify_client_id">Client ID</string>
     <string name="spotify_client_id_summary">شناسه برنامه Spotify را وارد کنید</string>
