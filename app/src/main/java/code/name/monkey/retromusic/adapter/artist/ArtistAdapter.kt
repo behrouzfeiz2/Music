@@ -145,7 +145,7 @@ class ArtistAdapter(
         val imageView = holder.image ?: return
         val imageUtil = CustomArtistImageUtil.getInstance(activity)
         val hasPreferredCover = imageUtil.hasCustomArtistImage(artist) ||
-            imageUtil.hasSpotifyArtistImage(artist)
+            imageUtil.hasLastFmArtistImage(artist)
         if (hasPreferredCover) {
             imageView.tag = artist.id
             imageView.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
