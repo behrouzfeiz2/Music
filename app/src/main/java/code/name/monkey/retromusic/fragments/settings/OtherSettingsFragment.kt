@@ -100,7 +100,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                         }
 
                     val total = artists.size
-                    val semaphore = kotlinx.coroutines.sync.Semaphore(4)
+                    val semaphore = kotlinx.coroutines.sync.Semaphore(1)
                     kotlinx.coroutines.coroutineScope {
                         artists.map { artist ->
                             async(Dispatchers.IO) {
