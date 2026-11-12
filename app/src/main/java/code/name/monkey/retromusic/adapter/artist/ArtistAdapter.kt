@@ -17,6 +17,11 @@ package code.name.monkey.retromusic.adapter.artist
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.PopupMenu
@@ -42,6 +47,7 @@ import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.color.MediaNotificationProcessor
 import com.bumptech.glide.Glide
 import me.zhanghai.android.fastscroll.PopupTextProvider
+import java.util.concurrent.Executors
 
 class ArtistAdapter(
     override val activity: FragmentActivity,
@@ -145,6 +151,70 @@ class ArtistAdapter(
                     setColors(colors, holder)
                 }
             })
+        loadFolderCollage(artist, holder)
+    }
+
+    private fun loadFolderCollage(artist: Artist, holder: ViewHolder) {
+        val imageView = holder.image ?: return
+        val albums = artist.albums.take(3)
+        if (albums.size < 2) return
+        imageView.tag = artist.id
+        coverExecutor.execute {
+            val bitmaps = albums.mapNotNull { album ->
+                val song = album.safeGetFirstSong()
+                runCatching {
+                    val target = Glide.with(activity)
+                        .asBitmap()
+                        .load(RetroGlideExtension.getSongModel(song))
+                        .submit(256, 256)
+                    try {
+                        target.get()
+                    } finally {
+                        Glide.with(activity).clear(target)
+                    }
+                }.getOrNull()
+            }
+            if (bitmaps.size < 2) return@execute
+            val size = 320
+            val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(output)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+            val cardWidth = 224f
+            val cardHeight = 224f
+            val placements = listOf(
+                Triple(112f, 164f, -13f),
+                Triple(208f, 164f, 13f),
+                Triple(160f, 144f, 0f)
+            )
+            bitmaps.take(3).forEachIndexed { index, bitmap ->
+                val (centerX, centerY, rotation) = placements[index]
+                val rect = RectF(
+                    centerX - cardWidth / 2f,
+                    centerY - cardHeight / 2f,
+                    centerX + cardWidth / 2f,
+                    centerY + cardHeight / 2f
+                )
+                canvas.save()
+                canvas.rotate(rotation, centerX, centerY)
+                paint.color = android.graphics.Color.WHITE
+                paint.setShadowLayer(10f, 0f, 5f, 0x66000000)
+                canvas.drawRoundRect(rect, 12f, 12f, paint)
+                paint.clearShadowLayer()
+                val clip = Path().apply { addRoundRect(rect, 9f, 9f, Path.Direction.CW) }
+                canvas.save()
+                canvas.clipPath(clip)
+                canvas.drawBitmap(bitmap, null, rect, paint)
+                canvas.restore()
+                canvas.restore()
+            }
+            activity.runOnUiThread {
+                if (imageView.tag == artist.id) {
+                    imageView.setImageBitmap(output)
+                } else {
+                    output.recycle()
+                }
+            }
+        }
     }
 
     override fun getItemCount(): Int {
