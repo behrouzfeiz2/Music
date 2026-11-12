@@ -152,7 +152,22 @@ class RealRepository(
     override suspend fun albumArtistByName(name: String): Artist =
         artistRepository.albumArtist(name)
 
-    override suspend fun recentArtists(): List<Artist> = lastAddedRepository.recentArtists()
+    override suspend fun recentArtists(): List<Artist> {
+        val songs = allSongs()
+        if (songs.isEmpty()) return emptyList()
+
+        // HistoryEntity is ordered by most recently played first. Resolve each
+        // played track to its first-level Music folder (artist), then keep the
+        // first occurrence so artists are ordered by their latest playback.
+        val recentFolderPaths = historySong()
+            .mapNotNull { history -> FolderArtistRepository.folderPathForSong(history.data) }
+            .distinct()
+
+        return recentFolderPaths.mapNotNull { folderPath ->
+            FolderArtistRepository.artistForFolder(songs, folderPath)
+                .takeIf { artist -> artist.albums.isNotEmpty() }
+        }
+    }
 
     override suspend fun recentAlbums(): List<Album> = lastAddedRepository.recentAlbums()
 
@@ -351,7 +366,7 @@ class RealRepository(
     }
 
     override suspend fun recentArtistsHome(): Home {
-        val artists = lastAddedRepository.recentArtists().take(5)
+        val artists = recentArtists().take(5)
         return Home(artists, RECENT_ARTISTS, R.string.recent_artists)
     }
 
