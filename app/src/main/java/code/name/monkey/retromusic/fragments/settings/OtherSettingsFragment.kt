@@ -86,7 +86,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                 for (artist in artists) {
                     checked++
                     val imageUrl = runCatching { SpotifyCatalogApi.findArtistImage(artist.name) }.getOrNull()
-                    if (imageUrl != null && !imageUtil.hasCustomArtistImage(artist) &&
+                    if (imageUrl != null && !imageUtil.hasCustomArtistImage(artist) &&\n                        !imageUtil.hasSpotifyArtistImage(artist) &&
                         imageUtil.cacheSpotifyArtistImage(artist, imageUrl)) saved++
                     preference.summary = getString(R.string.spotify_rebuild_progress, checked, artists.size)
                 }
