@@ -91,11 +91,19 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                     val total = artists.size
                     artists.forEachIndexed { index, artist ->
                         kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                        val imageUrl = LastFmCatalogApi.findArtistImage(artist.name)
+                        var requestFailed = false
+                        val imageUrl = try {
+                            LastFmCatalogApi.findArtistImage(artist.name)
+                        } catch (error: java.io.IOException) {
+                            // A timeout for one artist must not stop the entire archive scan.
+                            requestFailed = true
+                            saveFailed++
+                            null
+                        }
                         val wasSaved = if (imageUrl != null) {
                             imageUtil.cacheLastFmArtistImage(artist, imageUrl)
                         } else {
-                            notFound++
+                            if (!requestFailed) notFound++
                             false
                         }
                         checked++
