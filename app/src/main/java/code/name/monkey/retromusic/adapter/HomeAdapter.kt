@@ -185,7 +185,7 @@ class HomeAdapter(private val activity: AppCompatActivity) :
                 adapter = PlaylistAdapter(
                     activity,
                     home.arrayList as List<PlaylistWithSongs>,
-                    R.layout.item_grid,
+                    R.layout.item_daily_mix,
                     this@HomeAdapter
                 )
             }
