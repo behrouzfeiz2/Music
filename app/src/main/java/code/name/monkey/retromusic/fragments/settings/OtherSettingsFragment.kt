@@ -134,10 +134,16 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                     }
                 } catch (cancelled: kotlinx.coroutines.CancellationException) {
                     throw cancelled
-                } catch (_: Exception) {
+                } catch (error: Exception) {
                     if (isAdded && view != null) {
                         clickedPreference.summary = appContext.getString(R.string.spotify_rebuild_summary)
-                        Toast.makeText(appContext, "Spotify artwork update failed. Please try again.", Toast.LENGTH_LONG).show()
+                        val detail = error.message?.take(180).orEmpty()
+                        val message = if (detail.isNotBlank()) {
+                            "Spotify update failed: $detail"
+                        } else {
+                            "Spotify artwork update failed. Check your internet connection and try again."
+                        }
+                        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
                     }
                 } finally {
                     if (isAdded && view != null) {
