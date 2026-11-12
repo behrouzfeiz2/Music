@@ -210,7 +210,15 @@ class RealRepository(
             topAlbumsHome(),
             recentArtistsHome(),
             recentAlbumsHome(),
-            favoritePlaylistHome()
+            favoritePlaylistHome(),
+            Home(
+                arrayList = fetchPlaylistWithSongs().filter {
+                    it.playlistEntity.playlistName.startsWith("Daily Mix", ignoreCase = true) &&
+                        it.songs.isNotEmpty()
+                },
+                homeSection = DAILY_MIXES,
+                titleRes = R.string.daily_mix
+            )
         )
         for (section in sections) {
             if (section.arrayList.isNotEmpty()) {
