@@ -31,7 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.EXTRA_ARTIST_NAME
 import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.adapter.album.HorizontalAlbumAdapter
+import code.name.monkey.retromusic.adapter.album.AlbumAdapter
 import code.name.monkey.retromusic.adapter.song.SimpleSongAdapter
 import code.name.monkey.retromusic.databinding.FragmentArtistDetailsBinding
 import code.name.monkey.retromusic.dialogs.AddToPlaylistDialog
@@ -73,7 +73,7 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     abstract val artistName: String?
     private lateinit var artist: Artist
     private lateinit var songAdapter: SimpleSongAdapter
-    private lateinit var albumAdapter: HorizontalAlbumAdapter
+    private lateinit var albumAdapter: AlbumAdapter
     private var forceDownload: Boolean = false
     private var lang: String? = null
     private var biography: Spanned? = null
@@ -129,10 +129,11 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     }
 
     private fun setupRecyclerView() {
-        albumAdapter = HorizontalAlbumAdapter(requireActivity(), ArrayList(), this)
+        albumAdapter = AlbumAdapter(requireActivity(), ArrayList(), R.layout.item_list, this)
         binding.fragmentArtistContent.albumRecyclerView.apply {
             itemAnimator = DefaultItemAnimator()
-            layoutManager = GridLayoutManager(this.context, 1, GridLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(this.context)
+            isNestedScrollingEnabled = false
             adapter = albumAdapter
         }
         songAdapter = SimpleSongAdapter(requireActivity(), ArrayList(), R.layout.item_song)
@@ -164,7 +165,7 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             R.plurals.albumSongs, artist.songCount, artist.songCount
         )
         val albumText = resources.getQuantityString(
-            R.plurals.albums, artist.songCount, artist.songCount
+            R.plurals.albums, artist.albums.size, artist.albums.size
         )
         binding.fragmentArtistContent.songTitle.text = songText
         binding.fragmentArtistContent.albumTitle.text = albumText
@@ -192,7 +193,7 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             if (profile != null) {
                 renderSpotifyCatalog(profile, currentArtist)
                 profile.imageUrl?.let { imageUrl ->
-                    binding.image.scaleType = ImageView.ScaleType.FIT_CENTER
+                    binding.image.scaleType = ImageView.ScaleType.CENTER_CROP
                     Glide.with(requireContext())
                         .load(imageUrl)
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -227,19 +228,13 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         if (profile.albums.isEmpty()) {
             container.addView(spotifyCaption("No albums were found on Spotify."))
         } else {
-            val horizontalScroll = android.widget.HorizontalScrollView(requireContext()).apply {
-                isHorizontalScrollBarEnabled = false
-                clipToPadding = false
-            }
-            val albumRow = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.HORIZONTAL
-                setPadding(dp(16), dp(4), dp(16), dp(12))
+            val albumList = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
             }
             profile.albums.forEach { album ->
-                albumRow.addView(createSpotifyAlbumCard(album, localArtist))
+                albumList.addView(createSpotifyAlbumCard(album, localArtist))
             }
-            horizontalScroll.addView(albumRow)
-            container.addView(horizontalScroll)
+            container.addView(albumList)
         }
 
         if (profile.spotifyUrl.isNotBlank()) {
@@ -289,16 +284,20 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
 
     private fun createSpotifyAlbumCard(album: SpotifyAlbum, localArtist: Artist): View {
         val card = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(dp(132), ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginEnd = dp(12)
-            }
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setPadding(dp(16), dp(8), dp(16), dp(8))
             isClickable = true
             isFocusable = true
+            background = requireContext().getDrawable(R.drawable.rect_selector)
         }
         val cover = ImageView(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(124), dp(124))
-            scaleType = ImageView.ScaleType.FIT_CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
+            scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = album.name
         }
         album.imageUrl?.let { url ->
@@ -306,22 +305,28 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
                 .load(url)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
-                .dontTransform()
                 .into(cover)
+        }
+        val details = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                .apply { marginStart = dp(12) }
         }
         val title = TextView(requireContext()).apply {
             text = album.name
-            maxLines = 2
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
-            setPadding(0, dp(6), 0, 0)
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
         }
         val year = TextView(requireContext()).apply {
             text = album.releaseDate.take(4)
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+            setTextColor(textColorSecondary())
         }
+        details.addView(title)
+        details.addView(year)
         card.addView(cover)
-        card.addView(title)
-        card.addView(year)
+        card.addView(details)
         card.setOnClickListener {
             val localAlbum = localArtist.albums.firstOrNull {
                 normalizeSpotifyText(it.title) == normalizeSpotifyText(album.name)
