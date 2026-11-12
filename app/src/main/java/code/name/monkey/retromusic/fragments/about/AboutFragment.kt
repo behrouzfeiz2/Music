@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.databinding.FragmentAboutBinding
 import code.name.monkey.retromusic.extensions.openUrl
+import code.name.monkey.retromusic.extensions.openUrl
 import dev.chrisbanes.insetter.applyInsetter
 
 class AboutFragment : Fragment(R.layout.fragment_about) {
