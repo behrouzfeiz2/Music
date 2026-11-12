@@ -5,6 +5,17 @@
     android:orientation="vertical"
     android:paddingBottom="@dimen/mini_player_height">
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/projectDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="16dp"
+        android:text="@string/music_about_description"
+        android:textAppearance="@style/TextViewBody1" />
+
     <include
         android:id="@+id/card_credit"
         layout="@layout/card_credit" />
