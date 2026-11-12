@@ -29,6 +29,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
@@ -240,8 +241,10 @@ abstract class AbsTagEditorActivity<VB : ViewBinding> : AbsBaseActivity() {
 
         songPaths = getSongPaths()
         logD(songPaths?.size)
-        if (songPaths!!.isEmpty()) {
+        if (songPaths.isNullOrEmpty()) {
+            Toast.makeText(this, R.string.smart_playlist_empty, Toast.LENGTH_LONG).show()
             finish()
+            return
         }
         setUpViews()
         launcher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {

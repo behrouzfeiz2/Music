@@ -166,9 +166,15 @@ class SongTagEditorActivity : AbsTagEditorActivity<ActivitySongTagEditorBinding>
         )
     }
 
-    override fun getSongPaths(): List<String> = listOf(songRepository.song(id).data)
+    override fun getSongPaths(): List<String> {
+        val song = songRepository.song(id)
+        return if (song.id > 0L && song.data.isNotBlank()) listOf(song.data) else emptyList()
+    }
 
-    override fun getSongUris(): List<Uri> = listOf(MusicUtil.getSongFileUri(id))
+    override fun getSongUris(): List<Uri> {
+        val song = songRepository.song(id)
+        return if (song.id > 0L) listOf(MusicUtil.getSongFileUri(id)) else emptyList()
+    }
 
     override fun loadImageFromFile(selectedFile: Uri?) {
         Glide.with(this@SongTagEditorActivity)

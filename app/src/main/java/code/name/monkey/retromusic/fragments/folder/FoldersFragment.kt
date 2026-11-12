@@ -376,7 +376,10 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
     }
 
     private fun openTagEditor(songs: List<Song>) {
-        if (songs.isEmpty()) {
+        val validSongs = songs.distinctBy { it.id }
+            .filter { it.id > 0L && it.data.isNotBlank() }
+
+        if (validSongs.isEmpty()) {
             Toast.makeText(
                 requireContext(),
                 R.string.smart_playlist_empty,
@@ -385,27 +388,36 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             return
         }
 
-        if (songs.size == 1) {
+        if (validSongs.size == 1) {
             startActivity(
                 Intent(requireActivity(), SongTagEditorActivity::class.java)
-                    .putExtra(AbsTagEditorActivity.EXTRA_ID, songs.first().id)
+                    .putExtra(AbsTagEditorActivity.EXTRA_ID, validSongs.first().id)
             )
             return
         }
 
-        val albumIds = songs.map { it.albumId }.distinct()
-        if (albumIds.size == 1 && albumIds.first() > 0L) {
-            startActivity(
-                Intent(requireActivity(), AlbumTagEditorActivity::class.java)
-                    .putExtra(AbsTagEditorActivity.EXTRA_ID, albumIds.first())
-            )
-        } else {
+        // Folder layout is Artist/Album. Use the actual selected tracks instead
+        // of relying on MediaStore album IDs, which can be missing or incorrect.
+        val albumFolders = validSongs.mapNotNull { song ->
+            File(song.data).parentFile?.absolutePath
+        }.distinct()
+        if (albumFolders.size != 1) {
             Toast.makeText(
                 requireContext(),
                 R.string.tag_editor_select_one_album,
                 Toast.LENGTH_LONG
             ).show()
+            return
         }
+
+        startActivity(
+            Intent(requireActivity(), AlbumTagEditorActivity::class.java)
+                .putExtra(AbsTagEditorActivity.EXTRA_ID, validSongs.first().albumId)
+                .putExtra(
+                    AlbumTagEditorActivity.EXTRA_SONG_IDS,
+                    validSongs.map { it.id }.toLongArray()
+                )
+        )
     }
 
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {

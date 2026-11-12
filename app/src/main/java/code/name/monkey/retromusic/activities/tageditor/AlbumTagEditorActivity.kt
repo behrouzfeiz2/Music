@@ -35,6 +35,7 @@ import code.name.monkey.retromusic.glide.RetroGlideExtension.asBitmapPalette
 import code.name.monkey.retromusic.glide.palette.BitmapPaletteWrapper
 import code.name.monkey.retromusic.model.ArtworkInfo
 import code.name.monkey.retromusic.model.Song
+import code.name.monkey.retromusic.repository.SongRepository
 import code.name.monkey.retromusic.util.ImageUtil
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.RetroColorUtil.generatePalette
@@ -46,6 +47,7 @@ import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.shape.MaterialShapeDrawable
 import org.jaudiotagger.tag.FieldKey
+import org.koin.android.ext.android.inject
 import java.util.*
 
 class AlbumTagEditorActivity : AbsTagEditorActivity<ActivityAlbumTagEditorBinding>() {
@@ -62,6 +64,9 @@ class AlbumTagEditorActivity : AbsTagEditorActivity<ActivityAlbumTagEditorBindin
 
         window.enterTransition = slide
     }
+
+    private val songRepository by inject<SongRepository>()
+    private var selectedSongs: List<Song>? = null
 
     private var albumArtBitmap: Bitmap? = null
     private var deleteAlbumArt: Boolean = false
@@ -184,12 +189,23 @@ class AlbumTagEditorActivity : AbsTagEditorActivity<ActivityAlbumTagEditorBindin
         )
     }
 
-    override fun getSongPaths(): List<String> {
-        return repository.albumById(id).songs
-            .map(Song::data)
+    private fun songsToEdit(): List<Song> {
+        selectedSongs?.let { return it }
+
+        val selectedIds = intent.getLongArrayExtra(EXTRA_SONG_IDS)
+        val songs = if (!selectedIds.isNullOrEmpty()) {
+            selectedIds.map { songRepository.song(it) }
+                .filter { it.id > 0L && it.data.isNotBlank() }
+        } else {
+            repository.albumById(id).songs
+        }
+        selectedSongs = songs.distinctBy { it.id }
+        return selectedSongs.orEmpty()
     }
 
-    override fun getSongUris(): List<Uri> = repository.albumById(id).songs.map {
+    override fun getSongPaths(): List<String> = songsToEdit().map(Song::data)
+
+    override fun getSongUris(): List<Uri> = songsToEdit().map {
         MusicUtil.getSongFileUri(it.id)
     }
 
@@ -211,7 +227,7 @@ class AlbumTagEditorActivity : AbsTagEditorActivity<ActivityAlbumTagEditorBindin
         get() = binding.editorImage
 
     companion object {
-
+        const val EXTRA_SONG_IDS = "extra_song_ids"
         val TAG: String = AlbumTagEditorActivity::class.java.simpleName
     }
 }
