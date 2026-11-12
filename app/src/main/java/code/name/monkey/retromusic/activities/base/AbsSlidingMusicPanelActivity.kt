@@ -137,6 +137,7 @@ abstract class AbsSlidingMusicPanelActivity : AbsMusicServiceActivity(),
     private var panelStateCurrent: Int? = null
     private lateinit var binding: SlidingMusicPanelLayoutBinding
     private var isInOneTabMode = false
+    private var isOnlineTab = false
 
     private var navigationBarColorAnimator: ValueAnimator? = null
     private val argbEvaluator: ArgbEvaluator = ArgbEvaluator()
@@ -396,6 +397,23 @@ abstract class AbsSlidingMusicPanelActivity : AbsMusicServiceActivity(),
         })
     }
 
+    fun setOnlineMode(enabled: Boolean) {
+        if (isOnlineTab == enabled) return
+        isOnlineTab = enabled
+        miniPlayerFragment?.view?.isVisible = !enabled
+        if (enabled) {
+            bottomSheetBehavior.peekHeight = 0
+            bottomSheetBehavior.state = STATE_COLLAPSED
+            libraryViewModel.setFabMargin(this, dip(R.dimen.bottom_nav_height))
+        } else {
+            hideBottomSheet(
+                hide = MusicPlayerRemote.playingQueue.isEmpty(),
+                animate = false,
+                isBottomNavVisible = navigationView.isVisible
+            )
+        }
+    }
+
     val navigationView get() = binding.navigationView
 
     val slidingPanel get() = binding.slidingPanel
@@ -528,6 +546,12 @@ abstract class AbsSlidingMusicPanelActivity : AbsMusicServiceActivity(),
         animate: Boolean = false,
         isBottomNavVisible: Boolean = navigationView.isVisible && navigationView is BottomNavigationView,
     ) {
+        if (isOnlineTab) {
+            bottomSheetBehavior.peekHeight = 0
+            bottomSheetBehavior.state = STATE_COLLAPSED
+            libraryViewModel.setFabMargin(this, dip(R.dimen.bottom_nav_height))
+            return
+        }
         val heightOfBar = windowInsets.getBottomInsets() + dip(R.dimen.mini_player_height)
         val heightOfBarWithTabs = heightOfBar + dip(R.dimen.bottom_nav_height)
         if (hide) {
