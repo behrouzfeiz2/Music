@@ -58,6 +58,7 @@ import code.name.monkey.retromusic.helper.menu.SongsMenuHelper
 import code.name.monkey.retromusic.interfaces.ICallbacks
 import code.name.monkey.retromusic.interfaces.IMainActivityFragmentCallbacks
 import code.name.monkey.retromusic.interfaces.IScrollHelper
+import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
