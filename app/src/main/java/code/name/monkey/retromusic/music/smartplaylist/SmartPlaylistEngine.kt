@@ -7,6 +7,7 @@ package code.name.monkey.retromusic.music.smartplaylist
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.LastFMService
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -18,8 +19,8 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Builds a ranked mix exclusively from tracks already present in the local library.
- * Last.fm supplies popularity rankings; no audio is downloaded.
+ * Uses Last.fm rankings to select tracks that already exist in the local library.
+ * This class never downloads audio files.
  */
 object SmartPlaylistEngine {
     private data class RankedTrack(val song: Song, val playCount: Long, val artistOrder: Int)
@@ -55,7 +56,7 @@ object SmartPlaylistEngine {
         }.awaitAll().flatten()
 
         if (successfulRequests.get() == 0) {
-            throw IllegalStateException("Last.fm did not return any artist rankings")
+            throw IllegalStateException("Last.fm could not be reached or returned an API error")
         }
 
         ranked.sortedWith(
@@ -71,8 +72,14 @@ object SmartPlaylistEngine {
         lastFm: LastFMService,
         maxSongs: Int = 30
     ): List<Song> {
-        if (localSongs.isEmpty()) return emptyList()
-        val response = lastFm.artistTopTracks(artistName, 50)
+        require(localSongs.isNotEmpty()) { "No local songs were supplied for this artist" }
+        require(artistName.isNotBlank()) { "Artist folder name is empty" }
+
+        val response = lastFm.artistTopTracks(artistName.trim(), 100)
+        val apiError = response.get("message")?.asString
+        if (response.has("error")) {
+            throw IllegalStateException(apiError ?: "Last.fm API error: ${response.get("error")}")
+        }
         return parseMatches(response, artistName, localSongs, 0)
             .sortedByDescending { it.playCount }
             .distinctBy { it.song.id }
@@ -86,34 +93,53 @@ object SmartPlaylistEngine {
         localSongs: List<Song>,
         artistOrder: Int
     ): List<RankedTrack> {
-        val tracks = response.getAsJsonObject("toptracks")
-            ?.getAsJsonArray("track") ?: return emptyList()
+        val apiError = response.get("message")?.asString
+        if (response.has("error")) {
+            throw IllegalStateException(apiError ?: "Last.fm API error")
+        }
+        val trackElement = response.getAsJsonObject("toptracks")?.get("track")
+            ?: return emptyList()
+        val tracks = when {
+            trackElement.isJsonArray -> trackElement.asJsonArray.toList()
+            trackElement.isJsonObject -> listOf(trackElement)
+            else -> emptyList()
+        }
+
         val localByTitle = localSongs.groupBy { normalize(it.title) }
         return tracks.mapNotNull { element ->
+            if (!element.isJsonObject) return@mapNotNull null
             val remote = element.asJsonObject
-            val title = remote.get("name")?.asString ?: return@mapNotNull null
-            val remoteArtist = remote.getAsJsonObject("artist")?.get("name")?.asString
-            if (remoteArtist != null && normalize(remoteArtist) != normalize(folderArtist)) {
-                return@mapNotNull null
-            }
-            val candidates = localByTitle[normalize(title)].orEmpty()
+            val title = remote.get("name")?.takeUnless { it.isJsonNull }?.asString
+                ?: return@mapNotNull null
+            val normalizedTitle = normalize(title)
+            if (normalizedTitle.isBlank()) return@mapNotNull null
+
+            // The request itself is scoped to this artist. Do not reject legitimate
+            // local matches because Last.fm reports a featured artist or alias.
+            val candidates = localByTitle[normalizedTitle].orEmpty()
             val match = candidates.maxByOrNull { it.duration } ?: return@mapNotNull null
-            val playCount = remote.get("playcount")?.asString?.toLongOrNull() ?: 0L
+            val playCount = remote.get("playcount")?.let(::readLong) ?: 0L
             RankedTrack(match, playCount, artistOrder)
         }
     }
 
+    private fun readLong(value: JsonElement): Long? = runCatching {
+        if (value.isJsonPrimitive) value.asLong else null
+    }.getOrNull()
+
     private fun normalize(value: String): String {
-        val withoutVersion = value
+        val withoutFeaturing = value
+            .replace(Regex("(?i)\\s*\\((?:feat\\.?|featuring)\\s+[^)]*\\)"), " ")
+            .replace(Regex("(?i)\\s*\\[(?:feat\\.?|featuring)\\s+[^]]*]"), " ")
             .replace(
-                Regex("""(?i)\s*[\[(].*(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|version|bonus track|anniversary).*[)\]]\s*"""),
+                Regex("(?i)\\s*[\\[(].*(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|version|bonus track|anniversary).*[)\\]]\\s*"),
                 " "
             )
             .replace(
-                Regex("""(?i)\b(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|bonus track|anniversary)\b"""),
+                Regex("(?i)\\b(?:live|remaster(?:ed)?|deluxe|radio edit|mono|stereo|bonus track|anniversary)\\b"),
                 " "
             )
-        val decomposed = Normalizer.normalize(withoutVersion, Normalizer.Form.NFD)
+        val decomposed = Normalizer.normalize(withoutFeaturing, Normalizer.Form.NFD)
         return decomposed
             .replace(Regex("\\p{Mn}+"), "")
             .lowercase(Locale.ROOT)
