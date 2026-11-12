@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="4dp">
 
     <LinearLayout
         android:id="@+id/clickable_area"
@@ -23,8 +24,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="16dp"
-            android:textAppearance="@style/TextViewHeadline6"
+            android:paddingStart="20dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="12dp"
+            android:textAppearance="@style/TextViewHeadline5"
             android:textStyle="bold"
             tools:text="@tools:sample/full_names" />
 
