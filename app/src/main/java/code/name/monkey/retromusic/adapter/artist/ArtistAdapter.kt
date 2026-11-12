@@ -19,6 +19,7 @@ import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.widget.PopupMenu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -47,7 +48,8 @@ class ArtistAdapter(
     var dataSet: List<Artist>,
     var itemLayoutRes: Int,
     val IArtistClickListener: IArtistClickListener,
-    val IAlbumArtistClickListener: IAlbumArtistClickListener? = null
+    val IAlbumArtistClickListener: IAlbumArtistClickListener? = null,
+    private val onMakeBestOf: (Artist) -> Unit = {}
 ) : AbsMultiSelectAdapter<ArtistAdapter.ViewHolder, Artist>(activity, R.menu.menu_media_selection),
     PopupTextProvider {
 
@@ -96,6 +98,28 @@ class ArtistAdapter(
             holder.image?.transitionName = transitionName
         }
         loadArtistImage(artist, holder)
+        holder.menu?.apply {
+            isVisible = true
+            setOnClickListener { anchor ->
+                PopupMenu(activity, anchor).apply {
+                    menu.add(0, R.id.action_add_to_playlist, 0, R.string.action_add_to_playlist)
+                    menu.add(0, R.id.action_make_best_of, 1, R.string.make_best_of)
+                    setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.action_add_to_playlist -> SongsMenuHelper.handleMenuClick(
+                                activity, artist.songs, item.itemId
+                            )
+                            R.id.action_make_best_of -> {
+                                onMakeBestOf(artist)
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+                    show()
+                }
+            }
+        }
     }
 
     private fun setColors(processor: MediaNotificationProcessor, holder: ViewHolder) {
@@ -161,7 +185,7 @@ class ArtistAdapter(
     inner class ViewHolder(itemView: View) : MediaEntryViewHolder(itemView) {
 
         init {
-            menu?.isVisible = false
+            menu?.isVisible = true
         }
 
         override fun onClick(v: View?) {
