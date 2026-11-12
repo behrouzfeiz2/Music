@@ -64,6 +64,7 @@ import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.music.smartplaylist.BestOfSelectionHelper
+import code.name.monkey.retromusic.music.smartplaylist.DailyMixHelper
 import code.name.monkey.retromusic.providers.BlacklistStore
 import code.name.monkey.retromusic.util.FileUtil
 import code.name.monkey.retromusic.util.PreferenceUtil.startDirectory
@@ -358,8 +359,10 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
 
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {
         val itemId = item.itemId
+        val isBestOf = itemId == R.id.action_best_of_selection
+        val isDailyMix = itemId == R.id.action_create_daily_mix
 
-        if (itemId == R.id.action_best_of_selection) {
+        if (isBestOf || isDailyMix) {
             val selectedFolders = files.filter { it.isDirectory }
             if (selectedFolders.isEmpty()) {
                 Toast.makeText(
@@ -373,7 +376,8 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             val appContext = requireContext().applicationContext
             Toast.makeText(
                 requireContext(),
-                getString(R.string.best_of_selection_building),
+                if (isDailyMix) getString(R.string.daily_mix_building)
+                else getString(R.string.best_of_selection_building),
                 Toast.LENGTH_LONG
             ).show()
 
@@ -395,17 +399,20 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         }
                         try {
                             val result = withContext(Dispatchers.IO) {
-                                BestOfSelectionHelper.createPlaylist(appContext, selectedFolders, songs)
+                                if (isDailyMix) {
+                                    DailyMixHelper.createPlaylist(appContext, songs)
+                                } else {
+                                    BestOfSelectionHelper.createPlaylist(appContext, songs)
+                                }
                             }
-                            Toast.makeText(
-                                requireContext(),
-                                getString(
-                                    R.string.best_of_selection_created,
-                                    result.second,
-                                    result.first
-                                ),
-                                Toast.LENGTH_LONG
-                            ).show()
+                            libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.HomeSections)
+                            libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.Playlists)
+                            val message = if (isDailyMix) {
+                                getString(R.string.daily_mix_created, result.second, result.first)
+                            } else {
+                                getString(R.string.best_of_selection_created, result.second, result.first)
+                            }
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                         } catch (error: Exception) {
                             Toast.makeText(
                                 requireContext(),
