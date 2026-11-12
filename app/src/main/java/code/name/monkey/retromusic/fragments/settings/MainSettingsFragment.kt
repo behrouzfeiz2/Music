@@ -42,6 +42,7 @@ class MainSettingsFragment : Fragment(), View.OnClickListener {
                 R.id.otherSettings -> R.id.action_mainSettingsFragment_to_otherSettingsFragment
                 R.id.nowPlayingSettings -> R.id.action_mainSettingsFragment_to_nowPlayingSettingsFragment
                 R.id.backup_restore_settings -> R.id.action_mainSettingsFragment_to_backupFragment
+                R.id.aboutSettings -> R.id.action_mainSettingsFragment_to_aboutActivity
                 else -> R.id.action_mainSettingsFragment_to_themeSettingsFragment
             }
         )
@@ -66,6 +67,7 @@ class MainSettingsFragment : Fragment(), View.OnClickListener {
         binding.imageSettings.setOnClickListener(this)
         binding.otherSettings.setOnClickListener(this)
         binding.backupRestoreSettings.setOnClickListener(this)
+        binding.aboutSettings.setOnClickListener(this)
 
         binding.container.drawAboveSystemBarsWithPadding()
     }
