@@ -23,6 +23,7 @@ import code.name.monkey.retromusic.activities.ErrorActivity
 import code.name.monkey.retromusic.activities.MainActivity
 import code.name.monkey.retromusic.appshortcuts.DynamicShortcutManager
 import code.name.monkey.retromusic.helper.WallpaperAccentManager
+import code.name.monkey.retromusic.network.LastFmArtistArtworkScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -57,6 +58,9 @@ class App : Application() {
         // Set Default values for now playing preferences
         // This will reduce startup time for now playing settings fragment as Preference listener of AbsSlidingMusicPanelActivity won't be called
         PreferenceManager.setDefaultValues(this, R.xml.pref_now_playing_screen, false)
+
+        // Keep Last.fm artist artwork filling gradually in the background.
+        LastFmArtistArtworkScheduler.schedule(this)
     }
 
     override fun onTerminate() {
