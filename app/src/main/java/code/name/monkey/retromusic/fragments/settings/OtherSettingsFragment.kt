@@ -35,11 +35,8 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.async
 
 /**
  * @author Hemanth S (h4h13).
