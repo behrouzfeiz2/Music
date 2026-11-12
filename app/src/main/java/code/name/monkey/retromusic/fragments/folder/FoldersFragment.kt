@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.*
 import android.webkit.MimeTypeMap
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
@@ -43,8 +42,6 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.adapter.SongFileAdapter
 import code.name.monkey.retromusic.adapter.Storage
 import code.name.monkey.retromusic.adapter.StorageAdapter
-import code.name.monkey.retromusic.activities.tageditor.AbsTagEditorActivity
-import code.name.monkey.retromusic.activities.tageditor.AlbumTagEditorActivity
 import code.name.monkey.retromusic.adapter.StorageClickListener
 import code.name.monkey.retromusic.databinding.FragmentFolderBinding
 import code.name.monkey.retromusic.extensions.dip
@@ -64,8 +61,6 @@ import code.name.monkey.retromusic.interfaces.IScrollHelper
 import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
-import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.activities.tageditor.SongTagEditorActivity
 import code.name.monkey.retromusic.providers.BlacklistStore
 import code.name.monkey.retromusic.util.FileUtil
 import code.name.monkey.retromusic.util.PreferenceUtil.startDirectory
@@ -262,15 +257,6 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         return@setOnMenuItemClickListener true
                     }
 
-                    R.id.action_tag_editor -> {
-                        lifecycleScope.launch {
-                            val songs = withContext(Dispatchers.IO) {
-                                findSongsForTagEditor(listOf(file))
-                            }
-                            openTagEditor(songs)
-                        }
-                        return@setOnMenuItemClickListener true
-                    }
                 }
                 false
             }
@@ -278,25 +264,18 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             popupMenu.inflate(R.menu.menu_item_file)
             popupMenu.setOnMenuItemClickListener { item: MenuItem ->
                 when (val itemId = item.itemId) {
-                    R.id.action_play_next, R.id.action_add_to_current_playing, R.id.action_add_to_playlist, R.id.action_go_to_album, R.id.action_go_to_artist, R.id.action_share, R.id.action_tag_editor, R.id.action_details, R.id.action_set_as_ringtone, R.id.action_delete_from_device -> {
-                        lifecycleScope.launch {
-                            if (itemId == R.id.action_tag_editor) {
-                                val songs = withContext(Dispatchers.IO) {
-                                    findSongsForTagEditor(listOf(file))
-                                }
-                                openTagEditor(songs)
-                            } else {
-                                listSongs(
-                                    requireContext(),
-                                    listOf(file),
-                                    AUDIO_FILE_FILTER,
-                                    fileComparator
-                                ) { songs ->
-                                    if (songs.isNotEmpty()) {
-                                        SongMenuHelper.handleMenuClick(
-                                            requireActivity(), songs.first(), itemId
-                                        )
-                                    }
+                    R.id.action_play_next, R.id.action_add_to_current_playing, R.id.action_add_to_playlist, R.id.action_go_to_album, R.id.action_go_to_artist, R.id.action_share, R.id.action_details, R.id.action_set_as_ringtone, R.id.action_delete_from_device -> {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            listSongs(
+                                requireContext(),
+                                listOf(file),
+                                AUDIO_FILE_FILTER,
+                                fileComparator
+                            ) { songs ->
+                                if (songs.isNotEmpty()) {
+                                    SongMenuHelper.handleMenuClick(
+                                        requireActivity(), songs.first(), itemId
+                                    )
                                 }
                             }
                         }
@@ -374,74 +353,8 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
         updateAdapter(LinkedList())
     }
 
-    /**
-     * Resolve audio files directly from the folder browser selection.
-     * Repository.allSongs() applies library filters (duration, whitelist and
-     * blacklist), which must not hide files from the folder-based tag editor.
-     */
-    private suspend fun findSongsForTagEditor(files: List<File>): List<Song> =
-        withContext(Dispatchers.IO) {
-            val audioFiles = FileUtil.listFilesDeep(files, AUDIO_FILE_FILTER)
-            FileUtil.matchFilesWithMediaStore(requireContext(), audioFiles)
-        }
-
-    private fun openTagEditor(songs: List<Song>) {
-        val validSongs = songs.distinctBy { it.id }
-            .filter { it.id > 0L && it.data.isNotBlank() }
-
-        if (validSongs.isEmpty()) {
-            Toast.makeText(
-                requireContext(),
-                R.string.smart_playlist_empty,
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        if (validSongs.size == 1) {
-            startActivity(
-                Intent(requireActivity(), SongTagEditorActivity::class.java)
-                    .putExtra(AbsTagEditorActivity.EXTRA_ID, validSongs.first().id)
-            )
-            return
-        }
-
-        // Folder layout is Artist/Album. Use the actual selected tracks instead
-        // of relying on MediaStore album IDs, which can be missing or incorrect.
-        val albumFolders = validSongs.mapNotNull { song ->
-            File(song.data).parentFile?.absolutePath
-        }.distinct()
-        if (albumFolders.size != 1) {
-            Toast.makeText(
-                requireContext(),
-                R.string.tag_editor_select_one_album,
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        startActivity(
-            Intent(requireActivity(), AlbumTagEditorActivity::class.java)
-                .putExtra(AbsTagEditorActivity.EXTRA_ID, validSongs.first().albumId)
-                .putExtra(
-                    AlbumTagEditorActivity.EXTRA_SONG_IDS,
-                    validSongs.map { it.id }.toLongArray()
-                )
-        )
-    }
-
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {
         val itemId = item.itemId
-
-        if (itemId == R.id.action_tag_editor) {
-            lifecycleScope.launch {
-                val songs = withContext(Dispatchers.IO) {
-                    findSongsForTagEditor(files)
-                }
-                openTagEditor(songs)
-            }
-            return
-        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             listSongs(requireContext(), files, AUDIO_FILE_FILTER, fileComparator) { songs ->
