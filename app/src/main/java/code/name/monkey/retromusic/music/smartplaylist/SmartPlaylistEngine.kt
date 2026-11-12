@@ -5,6 +5,7 @@
 package code.name.monkey.retromusic.music.smartplaylist
 
 import code.name.monkey.retromusic.model.Song
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.LastFMService
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -33,57 +34,91 @@ object SmartPlaylistEngine {
         maxSongs: Int = 50,
         apiKey: String = LastFMService.API_KEY
     ): List<Song> = coroutineScope {
-        // In this library layout, the selected directory is the artist and its
-        // child directories are albums. Audio tags are not reliable for artist identity.
+        // Each selected top-level folder is an artist; child folders are albums.
+        // Resolve each song back to its artist folder through the same folder model
+        // used by the library, rather than trusting embedded Artist tags or string prefixes.
+        fun canonical(file: File): String =
+            runCatching { file.canonicalPath }.getOrDefault(file.absolutePath)
+                .trimEnd(File.separatorChar)
+
         val folders = artistFolders
             .filter { it.isDirectory }
-            .map { runCatching { it.canonicalFile }.getOrDefault(it.absoluteFile) }
-            .distinctBy { it.path }
-            .sortedBy { it.path.length }
+            .map { File(canonical(it)) }
+            .distinctBy { canonical(it) }
+            .sortedBy { canonical(it).length }
             .fold(mutableListOf<File>()) { roots, folder ->
+                val path = canonical(folder)
                 if (roots.none { root ->
-                        folder.path == root.path ||
-                            folder.path.startsWith(root.path + File.separator)
+                        val rootPath = canonical(root)
+                        path == rootPath || path.startsWith(rootPath + File.separator)
                     }
                 ) roots.add(folder)
                 roots
             }
 
         val localArtists = folders.mapNotNull { folder ->
-            val folderPath = folder.path.trimEnd(File.separatorChar) + File.separator
+            val selectedPath = canonical(folder)
             val songs = localSongs.filter { song ->
-                val songPath = runCatching { File(song.data).canonicalPath }
-                    .getOrDefault(File(song.data).absolutePath)
-                songPath.startsWith(folderPath)
+                FolderArtistRepository.folderPathForSong(song.data)?.let { artistPath ->
+                    canonical(File(artistPath)) == selectedPath
+                } == true
             }
             if (songs.isEmpty()) null else folder.name to songs
         }.sortedBy { it.first.lowercase(Locale.ROOT) }
 
         if (localArtists.isEmpty()) {
-            throw IllegalStateException("No audio files were found inside the selected artist folders")
+            throw IllegalStateException(
+                "Selected folders did not match the Music/<artist>/<album>/<track> structure. " +
+                    "Select artist folders (the parent folders containing album folders), not album folders."
+            )
         }
 
         val semaphore = Semaphore(1)
         val successfulRequests = AtomicInteger(0)
+        val matchedTracks = AtomicInteger(0)
+        val requestErrors = java.util.concurrent.ConcurrentLinkedQueue<String>()
+
         val ranked = localArtists.mapIndexed { index, entry ->
             async {
                 semaphore.withPermit {
-                    runCatching {
+                    try {
                         val artistName = entry.first
                         val response = lastFm.artistTopTracks(artistName, 100, apiKey)
-                        val matches = parseMatches(response, artistName, entry.second, index)
-                        successfulRequests.incrementAndGet()
-                        matches
-                    }.getOrDefault(emptyList())
-                }.also {
-                    // One request at a time, with a conservative interval.
-                    delay(1100)
+                        if (response.has("error")) {
+                            val message = response.get("message")?.takeUnless { it.isJsonNull }?.asString
+                                ?: "Last.fm error ${response.get("error")}"
+                            requestErrors.add("$artistName: $message")
+                            emptyList()
+                        } else {
+                            successfulRequests.incrementAndGet()
+                            val matches = parseMatches(response, artistName, entry.second, index)
+                            matchedTracks.addAndGet(matches.size)
+                            matches
+                        }
+                    } catch (error: Exception) {
+                        requestErrors.add("${entry.first}: ${error.message ?: error.javaClass.simpleName}")
+                        emptyList()
+                    } finally {
+                        // Keep Last.fm requests strictly sequential and rate-limited.
+                        delay(1100)
+                    }
                 }
             }
         }.awaitAll().flatten()
 
         if (successfulRequests.get() == 0) {
-            throw IllegalStateException("Last.fm could not be reached or returned an API error")
+            val details = requestErrors.take(3).joinToString("; ")
+            throw IllegalStateException(
+                if (details.isNotBlank()) "Last.fm requests failed: $details"
+                else "Last.fm could not be reached."
+            )
+        }
+        if (ranked.isEmpty()) {
+            throw IllegalStateException(
+                "Last.fm responded for ${successfulRequests.get()} selected artist folder(s), " +
+                    "but none of the returned top tracks matched the local audio files. " +
+                    "Check folder names and track file names."
+            )
         }
 
         ranked.sortedWith(
