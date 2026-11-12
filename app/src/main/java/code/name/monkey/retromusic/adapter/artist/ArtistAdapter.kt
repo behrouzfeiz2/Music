@@ -34,6 +34,7 @@ import code.name.monkey.retromusic.adapter.base.AbsMultiSelectAdapter
 import code.name.monkey.retromusic.adapter.base.MediaEntryViewHolder
 import code.name.monkey.retromusic.extensions.hide
 import code.name.monkey.retromusic.glide.RetroGlideExtension
+import code.name.monkey.retromusic.glide.audiocover.AudioFileCover
 import code.name.monkey.retromusic.glide.RetroGlideExtension.artistImageOptions
 import code.name.monkey.retromusic.glide.RetroGlideExtension.asBitmapPalette
 import code.name.monkey.retromusic.glide.RetroMusicColoredTarget
@@ -147,7 +148,7 @@ class ArtistAdapter(
             artist.albums.size == 1 -> {
                 imageView.tag = artist.id
                 Glide.with(activity)
-                    .load(RetroGlideExtension.getSongModel(artist.albums.first().safeGetFirstSong()))
+                    .load(AudioFileCover(artist.albums.first().safeGetFirstSong().data))
                     .placeholder(R.drawable.default_album_art)
                     .error(R.drawable.default_album_art)
                     .into(imageView)
@@ -171,18 +172,19 @@ class ArtistAdapter(
         imageView.tag = artist.id
         val albums = artist.albums.take(3)
         if (albums.size < 2) return
+        imageView.setImageResource(R.drawable.default_album_art)
         coverExecutor.execute {
             val bitmaps = albums.mapNotNull { album ->
                 val song = album.safeGetFirstSong()
                 runCatching {
-                    val target = Glide.with(activity)
+                    val target = Glide.with(activity.applicationContext)
                         .asBitmap()
-                        .load(RetroGlideExtension.getSongModel(song))
+                        .load(AudioFileCover(song.data))
                         .submit(256, 256)
                     try {
                         target.get()
                     } finally {
-                        Glide.with(activity).clear(target)
+                        Glide.with(activity.applicationContext).clear(target)
                     }
                 }.getOrNull()
             }
