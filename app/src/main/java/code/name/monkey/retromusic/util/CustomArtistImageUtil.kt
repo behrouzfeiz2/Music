@@ -143,7 +143,8 @@ class CustomArtistImageUtil private constructor(context: Context) {
 
     companion object {
         private const val CUSTOM_ARTIST_IMAGE_PREFS = "custom_artist_image"
-        private const val FOLDER_NAME = "/custom_artist_images/"\n        private const val SPOTIFY_FOLDER_NAME = "/spotify_artist_images/"
+        private const val FOLDER_NAME = "/custom_artist_images/"
+        private const val SPOTIFY_FOLDER_NAME = "/spotify_artist_images/"
 
         private var sInstance: CustomArtistImageUtil? = null
 
