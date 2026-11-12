@@ -53,6 +53,7 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="0dp"
                 app:cardCornerRadius="0dp"
+                android:visibility="gone"
                 app:layout_constraintDimensionRatio="16:9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -81,7 +82,7 @@
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/artistCoverContainer"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:text="@tools:sample/full_names" />
 
             <code.name.monkey.retromusic.views.BaselineGridTextView
@@ -97,6 +98,37 @@
                 app:layout_constraintTop_toBottomOf="@id/artistTitle"
                 tools:text="@tools:sample/full_names" />
 
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/biographyTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/biography"
+                android:textAppearance="@style/TextViewHeadline6"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/biographyText"
+                style="@style/TextAppearance.MaterialComponents.Body1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:ellipsize="end"
+                android:lineSpacingExtra="5dp"
+                android:maxLines="4"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/biographyTitle" />
+
             <include
                 android:id="@+id/fragment_artist_content"
                 layout="@layout/fragment_artist_content"
@@ -105,7 +137,7 @@
                 android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/text" />
+                app:layout_constraintTop_toBottomOf="@id/biographyText" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
