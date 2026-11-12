@@ -518,6 +518,10 @@
     <string name="scan_complete">Scan complete: %1$d media items found.</string>
     <string name="pref_save_last_directory_summary">هنگام تغییر به نمای پوشه، آخرین فهرست استفاده شده را بازیابی کنید</string>
     <string name="pref_save_last_directory_title">ذخیره آخرین فهرست</string>
+    <string name="lastfm_api_key_title">کلید API سرویس Last.fm</string>
+    <string name="lastfm_api_key_summary">کلید API دریافت‌شده از حساب Last.fm را وارد کنید. برای دریافت تصاویر هنرمندان استفاده می‌شود.</string>
+    <string name="lastfm_shared_secret_title">Shared Secret سرویس Last.fm</string>
+    <string name="lastfm_shared_secret_summary">اختیاری است و برای قابلیت‌های آینده Last.fm در همین دستگاه ذخیره می‌شود؛ دریافت تصویر هنرمند به آن نیاز ندارد.</string>
     <string name="lastfm_artwork_title">تصاویر هنرمندان (Last.fm)</string>
     <string name="lastfm_rebuild_archive">دریافت تصاویر هنرمندان</string>
     <string name="lastfm_rebuild_summary">کتابخانه موسیقی را اسکن و تصاویر موجود هنرمندان را از Last.fm ذخیره می‌کند. تا پایان اسکن این صفحه را باز نگه دارید.</string>
