@@ -220,9 +220,20 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
 
     override fun onAlbumClick(albumId: Long, view: View) {
         if (albumId < 0L) {
-            artist.albums.firstOrNull { it.id == albumId }?.let { singles ->
-                MusicPlayerRemote.openQueue(singles.songs, 0, true)
+            val selectedAlbum = artist.albums.firstOrNull { it.id == albumId } ?: return
+            if (selectedAlbum.title.equals("Singles", ignoreCase = true)) {
+                MusicPlayerRemote.openQueue(selectedAlbum.songs, 0, true)
+                return
             }
+            findNavController().navigate(
+                R.id.albumDetailsFragment,
+                bundleOf(
+                    EXTRA_ALBUM_ID to albumId,
+                    EXTRA_ARTIST_NAME to artistName
+                ),
+                null,
+                FragmentNavigatorExtras(view to albumId.toString())
+            )
             return
         }
         findNavController().navigate(
