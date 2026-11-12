@@ -68,6 +68,8 @@ import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.music.smartplaylist.BestOfSelectionHelper
 import code.name.monkey.retromusic.music.smartplaylist.DailyMixHelper
+import code.name.monkey.retromusic.music.smartplaylist.FolderSongSelector
+import code.name.monkey.retromusic.activities.tageditor.SongTagEditorActivity
 import code.name.monkey.retromusic.providers.BlacklistStore
 import code.name.monkey.retromusic.util.FileUtil
 import code.name.monkey.retromusic.util.PreferenceUtil.startDirectory
@@ -271,18 +273,24 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             popupMenu.setOnMenuItemClickListener { item: MenuItem ->
                 when (val itemId = item.itemId) {
                     R.id.action_play_next, R.id.action_add_to_current_playing, R.id.action_add_to_playlist, R.id.action_go_to_album, R.id.action_go_to_artist, R.id.action_share, R.id.action_tag_editor, R.id.action_details, R.id.action_set_as_ringtone, R.id.action_delete_from_device -> {
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            listSongs(
-                                requireContext(),
-                                listOf(file),
-                                AUDIO_FILE_FILTER,
-                                fileComparator
-                            ) { songs ->
-                                if (songs.isNotEmpty()) {
-                                    val song = songs.first()
-                                    SongMenuHelper.handleMenuClick(
-                                        requireActivity(), song, itemId
-                                    )
+                        lifecycleScope.launch {
+                            if (itemId == R.id.action_tag_editor) {
+                                val songs = withContext(Dispatchers.IO) {
+                                    FolderSongSelector.songsInFiles(listOf(file))
+                                }
+                                openTagEditor(songs)
+                            } else {
+                                listSongs(
+                                    requireContext(),
+                                    listOf(file),
+                                    AUDIO_FILE_FILTER,
+                                    fileComparator
+                                ) { songs ->
+                                    if (songs.isNotEmpty()) {
+                                        SongMenuHelper.handleMenuClick(
+                                            requireActivity(), songs.first(), itemId
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -360,6 +368,39 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
         updateAdapter(LinkedList())
     }
 
+    private fun openTagEditor(songs: List<Song>) {
+        if (songs.isEmpty()) {
+            Toast.makeText(
+                requireContext(),
+                R.string.smart_playlist_empty,
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        if (songs.size == 1) {
+            startActivity(
+                Intent(requireActivity(), SongTagEditorActivity::class.java)
+                    .putExtra(AbsTagEditorActivity.EXTRA_ID, songs.first().id)
+            )
+            return
+        }
+
+        val albumIds = songs.map { it.albumId }.distinct()
+        if (albumIds.size == 1 && albumIds.first() > 0L) {
+            startActivity(
+                Intent(requireActivity(), AlbumTagEditorActivity::class.java)
+                    .putExtra(AbsTagEditorActivity.EXTRA_ID, albumIds.first())
+            )
+        } else {
+            Toast.makeText(
+                requireContext(),
+                R.string.tag_editor_select_one_album,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {
         val itemId = item.itemId
         val isBestOf = itemId == R.id.action_best_of_selection
@@ -390,17 +431,7 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         if (isBestOf) {
                             BestOfSelectionHelper.createPlaylist(appContext, selectedFolders)
                         } else {
-                            var listedSongs: List<Song> = emptyList()
-                            listSongs(
-                                appContext,
-                                selectedFolders,
-                                AUDIO_FILE_FILTER,
-                                fileComparator
-                            ) { songs -> listedSongs = songs }
-                            if (listedSongs.isEmpty()) {
-                                throw IllegalStateException(getString(R.string.smart_playlist_empty))
-                            }
-                            DailyMixHelper.createPlaylist(appContext, listedSongs)
+                            DailyMixHelper.createPlaylist(appContext, selectedFolders)
                         }
                     }
                     libraryViewModel.forceReload(code.name.monkey.retromusic.fragments.ReloadType.HomeSections)
@@ -423,30 +454,20 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
             return
         }
 
+        if (itemId == R.id.action_tag_editor) {
+            lifecycleScope.launch {
+                val songs = withContext(Dispatchers.IO) {
+                    FolderSongSelector.songsInFiles(files)
+                }
+                openTagEditor(songs)
+            }
+            return
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
             listSongs(requireContext(), files, AUDIO_FILE_FILTER, fileComparator) { songs ->
                 if (songs.isNotEmpty()) {
-                    if (itemId == R.id.action_tag_editor) {
-                        val albumIds = songs.map { it.albumId }.distinct()
-                        requireActivity().runOnUiThread {
-                            if (albumIds.size == 1 && albumIds.first() > 0L) {
-                                startActivity(
-                                    Intent(requireActivity(), AlbumTagEditorActivity::class.java)
-                                        .putExtra(AbsTagEditorActivity.EXTRA_ID, albumIds.first())
-                                )
-                            } else {
-                                Toast.makeText(
-                                    requireContext(),
-                                    R.string.tag_editor_select_one_album,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    } else {
-                        SongsMenuHelper.handleMenuClick(
-                            requireActivity(), songs, itemId
-                        )
-                    }
+                    SongsMenuHelper.handleMenuClick(requireActivity(), songs, itemId)
                 }
             }
         }
