@@ -136,6 +136,8 @@ class CustomArtistImageUtil private constructor(context: Context) {
         }
     }
 
+    fun hasSpotifyArtistImage(artist: Artist): Boolean = getSpotifyFile(artist).exists()
+
     // shared prefs saves us many IO operations
     fun hasCustomArtistImage(artist: Artist): Boolean {
         return mPreferences.getBoolean(getFileName(artist), false)
