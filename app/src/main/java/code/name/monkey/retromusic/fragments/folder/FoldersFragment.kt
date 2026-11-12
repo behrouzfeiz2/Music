@@ -63,6 +63,7 @@ import code.name.monkey.retromusic.misc.FolderMediaScannerCompletionListener
 
 import code.name.monkey.retromusic.misc.WrappedAsyncTaskLoader
 import code.name.monkey.retromusic.model.Song
+import code.name.monkey.retromusic.music.smartplaylist.BestOfSelectionHelper
 import code.name.monkey.retromusic.providers.BlacklistStore
 import code.name.monkey.retromusic.util.FileUtil
 import code.name.monkey.retromusic.util.PreferenceUtil.startDirectory
@@ -357,6 +358,66 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
 
     override fun onMultipleItemAction(item: MenuItem, files: ArrayList<File>) {
         val itemId = item.itemId
+
+        if (itemId == R.id.action_best_of_selection) {
+            val selectedFolders = files.filter { it.isDirectory }
+            if (selectedFolders.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.best_of_selection_folders_only),
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+
+            val appContext = requireContext().applicationContext
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.best_of_selection_building),
+                Toast.LENGTH_LONG
+            ).show()
+
+            lifecycleScope.launch {
+                listSongs(
+                    appContext,
+                    selectedFolders,
+                    AUDIO_FILE_FILTER,
+                    fileComparator
+                ) { songs ->
+                    lifecycleScope.launch {
+                        if (songs.isEmpty()) {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.smart_playlist_empty),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@launch
+                        }
+                        try {
+                            val result = withContext(Dispatchers.IO) {
+                                BestOfSelectionHelper.createPlaylist(appContext, songs)
+                            }
+                            Toast.makeText(
+                                requireContext(),
+                                getString(
+                                    R.string.best_of_selection_created,
+                                    result.second,
+                                    result.first
+                                ),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } catch (error: Exception) {
+                            Toast.makeText(
+                                requireContext(),
+                                error.message ?: getString(R.string.smart_playlist_failed),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+            }
+            return
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             listSongs(requireContext(), files, AUDIO_FILE_FILTER, fileComparator) { songs ->
