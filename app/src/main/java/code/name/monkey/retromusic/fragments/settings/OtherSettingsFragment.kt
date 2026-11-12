@@ -75,6 +75,8 @@ class OtherSettingsFragment : AbsSettingsFragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 var checked = 0
                 var saved = 0
+                var notFound = 0
+                var saveFailed = 0
                 try {
                     val artists = withContext(Dispatchers.IO) {
                         libraryViewModel.getArtistsForArtworkRebuild()
@@ -83,18 +85,21 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                             it.name.isNotBlank() &&
                                 it.name != "Unknown Artist" &&
                                 it.name != "Various Artists" &&
-                                !imageUtil.hasCustomArtistImage(it) &&
-                                !imageUtil.hasLastFmArtistImage(it)
+                                !imageUtil.hasCustomArtistImage(it)
                         }
 
                     val total = artists.size
                     artists.forEachIndexed { index, artist ->
                         kotlinx.coroutines.currentCoroutineContext().ensureActive()
                         val imageUrl = LastFmCatalogApi.findArtistImage(artist.name)
-                        val wasSaved = imageUrl != null &&
+                        val wasSaved = if (imageUrl != null) {
                             imageUtil.cacheLastFmArtistImage(artist, imageUrl)
+                        } else {
+                            notFound++
+                            false
+                        }
                         checked++
-                        if (wasSaved) saved++
+                        if (wasSaved) saved++ else if (imageUrl != null) saveFailed++
                         if (isAdded && view != null) {
                             clickedPreference.summary = appContext.getString(
                                 R.string.lastfm_rebuild_progress, checked, total
@@ -107,7 +112,7 @@ class OtherSettingsFragment : AbsSettingsFragment() {
                         clickedPreference.summary = appContext.getString(R.string.lastfm_rebuild_summary)
                         Toast.makeText(
                             appContext,
-                            appContext.getString(R.string.lastfm_rebuild_complete, checked, saved),
+                            appContext.getString(R.string.lastfm_rebuild_complete, checked, saved, notFound, saveFailed),
                             Toast.LENGTH_LONG
                         ).show()
                     }
