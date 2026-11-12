@@ -62,6 +62,8 @@ class ArtistAdapter(
 
     var albumArtistsOnly = false
 
+    private val coverExecutor = Executors.newFixedThreadPool(2)
+
     init {
         this.setHasStableIds(true)
     }
