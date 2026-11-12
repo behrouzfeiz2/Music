@@ -92,7 +92,7 @@
             android:summary="@string/lastfm_api_key_summary"
             android:dialogTitle="@string/lastfm_api_key_title"
             android:inputType="textNoSuggestions"
-            app:icon="@drawable/ic_settings" />
+            app:icon="@drawable/ic_artist" />
 
         <androidx.preference.EditTextPreference
             android:key="lastfm_shared_secret"
