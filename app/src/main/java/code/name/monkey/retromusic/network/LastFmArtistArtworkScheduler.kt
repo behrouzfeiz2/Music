@@ -23,15 +23,23 @@ object LastFmArtistArtworkScheduler {
         val workManager = WorkManager.getInstance(context.applicationContext)
         val constraints = networkConstraints()
 
-        // Start filling missing artwork as soon as a network connection exists.
-        val initialWork = OneTimeWorkRequestBuilder<LastFmArtistArtworkWorker>()
-            .setConstraints(constraints)
-            .build()
-        workManager.enqueueUniqueWork(
-            BATCH_CHAIN_NAME,
-            ExistingWorkPolicy.KEEP,
-            initialWork
+        // Start the initial archive pass only once. WorkManager persists it
+        // across app exits; the weekly worker discovers artists added later.
+        val preferences = context.applicationContext.getSharedPreferences(
+            "lastfm_background_artwork",
+            Context.MODE_PRIVATE
         )
+        if (!preferences.getBoolean("initial_scan_scheduled", false)) {
+            val initialWork = OneTimeWorkRequestBuilder<LastFmArtistArtworkWorker>()
+                .setConstraints(constraints)
+                .build()
+            workManager.enqueueUniqueWork(
+                BATCH_CHAIN_NAME,
+                ExistingWorkPolicy.KEEP,
+                initialWork
+            )
+            preferences.edit().putBoolean("initial_scan_scheduled", true).apply()
+        }
 
         // Recheck periodically so artists added to the library later are included.
         val periodicWork = PeriodicWorkRequestBuilder<LastFmArtistArtworkWorker>(
