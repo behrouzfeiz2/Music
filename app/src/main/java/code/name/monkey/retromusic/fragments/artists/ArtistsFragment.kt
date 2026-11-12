@@ -16,7 +16,9 @@ package code.name.monkey.retromusic.fragments.artists
 
 import android.os.Bundle
 import android.view.*
+import android.widget.ProgressBar
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -36,25 +38,82 @@ import code.name.monkey.retromusic.interfaces.IArtistClickListener
 import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.music.smartplaylist.SmartPlaylistEngine
 import code.name.monkey.retromusic.network.LastFMService
+import code.name.monkey.retromusic.network.SpotifyCatalogApi
+import code.name.monkey.retromusic.BuildConfig
 import code.name.monkey.retromusic.extensions.showToast
 import code.name.monkey.retromusic.service.MusicService
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 
 class ArtistsFragment : AbsRecyclerViewCustomGridSizeFragment<ArtistAdapter, GridLayoutManager>(),
     IArtistClickListener, IAlbumArtistClickListener {
+    private var spotifyCoversJob: Job? = null
+    private var spotifyProgressBar: ProgressBar? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        spotifyProgressBar = view.findViewById(R.id.spotifyArtistsProgress)
         libraryViewModel.getSongs().observe(viewLifecycleOwner) {
+            val artists = FolderArtistRepository.artists(it)
             adapter?.apply {
-                swapDataSet(FolderArtistRepository.artists(it))
+                swapDataSet(artists)
                 albumArtistsOnly = false
             }
+            loadSpotifyArtistCovers(artists)
         }
+    }
+
+
+    private fun loadSpotifyArtistCovers(artists: List<code.name.monkey.retromusic.model.Artist>) {
+        spotifyCoversJob?.cancel()
+        val progress = spotifyProgressBar ?: return
+        if (BuildConfig.SPOTIFY_CLIENT_ID.isBlank() ||
+            BuildConfig.SPOTIFY_CLIENT_SECRET.isBlank() || artists.isEmpty()
+        ) {
+            progress.isVisible = false
+            return
+        }
+        progress.max = artists.size
+        progress.progress = 0
+        progress.isVisible = true
+        spotifyCoversJob = viewLifecycleOwner.lifecycleScope.launch {
+            val imageUrls = linkedMapOf<String, String>()
+            val semaphore = Semaphore(3)
+            coroutineScope {
+                val lookups = artists.map { artist ->
+                    async {
+                        semaphore.withPermit {
+                            runCatching { SpotifyCatalogApi.findArtistImage(artist.name) }.getOrNull()
+                        }
+                    }
+                }
+                lookups.forEachIndexed { index, lookup ->
+                    val imageUrl = lookup.await()
+                    if (!imageUrl.isNullOrBlank()) {
+                        imageUrls[artists[index].name] = imageUrl
+                        (adapter as? ArtistAdapter)?.setSpotifyImageUrls(imageUrls.toMap())
+                    }
+                    progress.progress = index + 1
+                }
+            }
+            progress.isVisible = false
+        }
+    }
+
+    override fun onDestroyView() {
+        spotifyCoversJob?.cancel()
+        spotifyCoversJob = null
+        spotifyProgressBar = null
+        super.onDestroyView()
     }
 
     override val titleRes: Int
