@@ -9,7 +9,7 @@ import code.name.monkey.retromusic.db.PlaylistEntity
 import code.name.monkey.retromusic.db.toSongsEntity
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.music.folders.FolderArtistRepository
-import code.name.monkey.retromusic.repository.RealRepository
+import code.name.monkey.retromusic.repository.Repository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -22,7 +22,7 @@ object DailyMixHelper : KoinComponent {
     suspend fun createPlaylist(context: Context, localSongs: List<Song>): Pair<String, Int> {
         require(localSongs.isNotEmpty()) { "No songs found in the selected folders." }
 
-        val repository = get<RealRepository>()
+        val repository = get<Repository>()
         val buckets = localSongs.distinctBy { it.id }
             .groupBy { song ->
                 FolderArtistRepository.folderPathForSong(song.data)
