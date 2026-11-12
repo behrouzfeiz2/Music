@@ -152,10 +152,11 @@ private val viewModules = module {
         LibraryViewModel(get())
     }
 
-    viewModel { (albumId: Long) ->
+    viewModel { (albumId: Long, folderArtistKey: String?) ->
         AlbumDetailsViewModel(
             get(),
-            albumId
+            albumId,
+            folderArtistKey
         )
     }
 
