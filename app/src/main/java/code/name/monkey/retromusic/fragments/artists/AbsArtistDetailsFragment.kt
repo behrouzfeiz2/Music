@@ -39,6 +39,8 @@ import code.name.monkey.retromusic.helper.SortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.network.LastFmArtistArtworkLoader
+import code.name.monkey.retromusic.network.LastFmArtworkLoadResult
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmArtist
 import code.name.monkey.retromusic.repository.RealRepository
@@ -143,6 +145,20 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         }
         this.artist = artist
         loadArtistImage(artist)
+        // Fetch this artist's Last.fm artwork immediately while the rest of the
+        // library is scanned independently by WorkManager.
+        if (!CustomArtistImageUtil.getInstance(requireContext()).hasCustomArtistImage(artist) &&
+            !CustomArtistImageUtil.getInstance(requireContext()).hasLastFmArtistImage(artist)
+        ) {
+            lifecycleScope.launch {
+                val result = LastFmArtistArtworkLoader.load(artist)
+                if (result == LastFmArtworkLoadResult.SAVED &&
+                    _binding != null && this@AbsArtistDetailsFragment.artist.id == artist.id
+                ) {
+                    loadArtistImage(artist)
+                }
+            }
+        }
         if (PreferenceUtil.isAllowedToDownloadMetadata(requireContext())) {
             loadBiography(artist.name)
         }
