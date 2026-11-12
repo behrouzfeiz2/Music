@@ -83,33 +83,14 @@
 
     <code.name.monkey.appthemehelper.common.prefs.supportv7.ATEPreferenceCategory
         android:layout="@layout/preference_category_title"
-        android:title="@string/spotify_connect">
+        android:title="@string/lastfm_artwork_title">
 
         <androidx.preference.Preference
-            android:key="spotify_rebuild_archive"
+            android:key="lastfm_rebuild_archive"
             android:layout="@layout/list_item_view"
-            android:title="@string/spotify_rebuild_archive"
-            android:summary="@string/spotify_rebuild_summary"
-            app:icon="@drawable/ic_spotify" />
-
-        <androidx.preference.EditTextPreference
-            android:defaultValue=""
-            android:key="spotify_client_id"
-            android:layout="@layout/list_item_view"
-            android:dialogTitle="@string/spotify_client_id"
-            android:summary="@string/spotify_client_id_summary"
-            android:title="@string/spotify_client_id"
-            app:icon="@drawable/ic_spotify" />
-
-        <androidx.preference.EditTextPreference
-            android:defaultValue=""
-            android:key="spotify_client_secret"
-            android:layout="@layout/list_item_view"
-            android:dialogTitle="@string/spotify_client_secret"
-            android:inputType="textPassword"
-            android:summary="@string/spotify_client_secret_summary"
-            android:title="@string/spotify_client_secret"
-            app:icon="@drawable/ic_spotify" />
+            android:title="@string/lastfm_rebuild_archive"
+            android:summary="@string/lastfm_rebuild_summary"
+            app:icon="@drawable/ic_artist" />
 
     </code.name.monkey.appthemehelper.common.prefs.supportv7.ATEPreferenceCategory>
 
