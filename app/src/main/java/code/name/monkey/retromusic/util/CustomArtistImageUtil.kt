@@ -169,5 +169,11 @@ class CustomArtistImageUtil private constructor(context: Context) {
             val dir = File(App.getContext().filesDir, FOLDER_NAME)
             return File(dir, getFileName(artist))
         }
+
+        @JvmStatic
+        fun getSpotifyFile(artist: Artist): File {
+            val dir = File(App.getContext().filesDir, SPOTIFY_FOLDER_NAME)
+            return File(dir, getFileName(artist))
+        }
     }
 }
