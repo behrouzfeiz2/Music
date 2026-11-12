@@ -1,12 +1,6 @@
 package code.name.monkey.retromusic.fragments.artists
 
 import android.graphics.Color
-import android.content.Intent
-import android.net.Uri
-import android.view.Gravity
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.os.Bundle
 import android.text.Spanned
 import android.view.Menu
@@ -21,8 +15,6 @@ import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -47,20 +39,11 @@ import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
 import code.name.monkey.retromusic.network.Result
-import code.name.monkey.retromusic.network.SpotifyAlbum
-import code.name.monkey.retromusic.network.SpotifyArtistProfile
-import code.name.monkey.retromusic.network.SpotifyCatalogApi
-import code.name.monkey.retromusic.network.SpotifyTrack
 import code.name.monkey.retromusic.network.model.LastFmArtist
 import code.name.monkey.retromusic.repository.RealRepository
 import code.name.monkey.retromusic.util.*
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.transition.MaterialContainerTransform
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 import java.util.*
 
@@ -155,7 +138,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         }
         this.artist = artist
         loadArtistImage(artist)
-        loadSpotifyCatalog(artist)
         if (PreferenceUtil.isAllowedToDownloadMetadata(requireContext())) {
             loadBiography(artist.name)
         }
@@ -177,179 +159,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
         albumAdapter.swapDataSet(artist.albums)
     }
 
-
-    private fun loadSpotifyCatalog(currentArtist: Artist) {
-        val root = binding.root
-        val spotifyContainer = root.findViewById<LinearLayout>(R.id.spotifyCatalog) ?: return
-        val loading = root.findViewById<android.widget.ProgressBar>(R.id.spotifyLoading) ?: return
-        spotifyContainer.removeAllViews()
-        spotifyContainer.isVisible = false
-        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val hasCredentials = !preferences.getString("spotify_client_id", "").isNullOrBlank() &&
-            !preferences.getString("spotify_client_secret", "").isNullOrBlank()
-        loading.isVisible = hasCredentials
-        if (!hasCredentials) return
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val profile = runCatching { SpotifyCatalogApi.findArtist(currentArtist.name) }.getOrNull()
-            if (_binding == null || !isAdded || artist.name != currentArtist.name) return@launch
-            loading.isVisible = false
-            if (profile != null) {
-                renderSpotifyCatalog(profile, currentArtist)
-                profile.imageUrl?.let { imageUrl ->
-                    val imageUtil = CustomArtistImageUtil.getInstance(requireContext())
-                    if (!imageUtil.hasCustomArtistImage(currentArtist) &&
-                        !imageUtil.hasSpotifyArtistImage(currentArtist)
-                    ) {
-                        imageUtil.cacheSpotifyArtistImage(currentArtist, imageUrl)
-                    }
-                    if (_binding != null) {
-                        loadArtistImage(currentArtist)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun renderSpotifyCatalog(profile: SpotifyArtistProfile, localArtist: Artist) {
-        val container = binding.root.findViewById<LinearLayout>(R.id.spotifyCatalog) ?: return
-        container.removeAllViews()
-        container.isVisible = true
-        binding.artistTitle.text = profile.name
-        binding.fragmentArtistContent.albumTitle.text = "Albums in your library"
-        binding.fragmentArtistContent.songTitle.text = "Your local tracks"
-
-        val popularTitle = spotifySectionTitle("Popular tracks")
-        container.addView(popularTitle)
-        if (profile.tracks.isEmpty()) {
-            container.addView(spotifyCaption("No popular tracks were returned by Spotify."))
-        } else {
-            profile.tracks.take(10).forEachIndexed { index, track ->
-                container.addView(createSpotifyTrackRow(index + 1, track, localArtist))
-            }
-        }
-
-        val albumsTitle = spotifySectionTitle("Albums & Singles")
-        container.addView(albumsTitle)
-        if (profile.albums.isEmpty()) {
-            container.addView(spotifyCaption("No albums were found on Spotify."))
-        } else {
-            val albumList = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.VERTICAL
-            }
-            profile.albums.forEach { album ->
-                albumList.addView(createSpotifyAlbumCard(album, localArtist))
-            }
-            container.addView(albumList)
-        }
-
-        if (profile.spotifyUrl.isNotBlank()) {
-            val attribution = spotifyCaption("View artist on Spotify").apply {
-                gravity = Gravity.END
-                setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_spotify, 0, 0, 0)
-                compoundDrawablePadding = dp(6)
-                setPadding(dp(16), dp(8), dp(16), dp(16))
-                setOnClickListener {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(profile.spotifyUrl)))
-                }
-            }
-            container.addView(attribution)
-        }
-    }
-
-    private fun spotifySectionTitle(title: String) = TextView(requireContext()).apply {
-        text = title
-        setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium)
-        setPadding(dp(16), dp(16), dp(16), dp(8))
-    }
-
-    private fun spotifyCaption(value: String) = TextView(requireContext()).apply {
-        text = value
-        setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
-        setPadding(dp(16), dp(6), dp(16), dp(8))
-    }
-
-    private fun createSpotifyTrackRow(number: Int, track: SpotifyTrack, localArtist: Artist) =
-        TextView(requireContext()).apply {
-            text = "$number.  ${track.name}\n      ${track.album}"
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
-            setPadding(dp(20), dp(10), dp(16), dp(10))
-            isClickable = true
-            isFocusable = true
-            setOnClickListener {
-                val localSong = localArtist.songs.firstOrNull {
-                    normalizeSpotifyText(it.title) == normalizeSpotifyText(track.name)
-                }
-                if (localSong != null) {
-                    MusicPlayerRemote.openQueue(listOf(localSong), 0, true)
-                } else {
-                    showToast("This track is not available in your local library.")
-                }
-            }
-        }
-
-    private fun createSpotifyAlbumCard(album: SpotifyAlbum, localArtist: Artist): View {
-        val card = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setPadding(dp(16), dp(8), dp(16), dp(8))
-            isClickable = true
-            isFocusable = true
-        }
-        val cover = ImageView(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            contentDescription = album.name
-        }
-        album.imageUrl?.let { url ->
-            Glide.with(requireContext())
-                .load(url)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true)
-                .into(cover)
-        }
-        val details = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-                .apply { marginStart = dp(12) }
-        }
-        val title = TextView(requireContext()).apply {
-            text = album.name
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.END
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
-        }
-        val year = TextView(requireContext()).apply {
-            text = album.releaseDate.take(4)
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
-            setTextColor(textColorSecondary())
-        }
-        details.addView(title)
-        details.addView(year)
-        card.addView(cover)
-        card.addView(details)
-        card.setOnClickListener {
-            val localAlbum = localArtist.albums.firstOrNull {
-                normalizeSpotifyText(it.title) == normalizeSpotifyText(album.name)
-            }
-            if (localAlbum != null && localAlbum.songs.isNotEmpty()) {
-                MusicPlayerRemote.openQueue(localAlbum.songs, 0, true)
-            } else if (album.spotifyUrl.isNotBlank()) {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(album.spotifyUrl)))
-            }
-        }
-        return card
-    }
-
-    private fun normalizeSpotifyText(value: String): String =
-        value.lowercase(Locale.ROOT).replace(Regex("[^\\p{L}\\p{N}]"), "")
-
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
 
     private fun loadBiography(
         name: String,
