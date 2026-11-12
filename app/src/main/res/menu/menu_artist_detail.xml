@@ -17,6 +17,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_search_artist_image"
+        android:title="@string/search_artist_image_google"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_set_artist_image"
         android:title="@string/set_artist_image"
         app:showAsAction="never" />
