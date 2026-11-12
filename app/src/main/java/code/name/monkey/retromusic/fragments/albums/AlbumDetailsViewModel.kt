@@ -18,6 +18,7 @@ import androidx.lifecycle.*
 import code.name.monkey.retromusic.interfaces.IMusicServiceEventListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.Result
 import code.name.monkey.retromusic.network.model.LastFmAlbum
 import code.name.monkey.retromusic.repository.RealRepository
@@ -26,7 +27,8 @@ import kotlinx.coroutines.launch
 
 class AlbumDetailsViewModel(
     private val repository: RealRepository,
-    private val albumId: Long
+    private val albumId: Long,
+    private val folderArtistKey: String?
 ) : ViewModel(), IMusicServiceEventListener {
     private val albumDetails = MutableLiveData<Album>()
 
@@ -36,7 +38,12 @@ class AlbumDetailsViewModel(
 
     private fun fetchAlbum() {
         viewModelScope.launch(IO) {
-            albumDetails.postValue(repository.albumByIdAsync(albumId))
+            val album = if (albumId < 0L && !folderArtistKey.isNullOrBlank()) {
+                FolderArtistRepository.albumForFolderKey(repository.allSongs(), folderArtistKey, albumId)
+            } else {
+                repository.albumByIdAsync(albumId)
+            }
+            album?.let { albumDetails.postValue(it) }
         }
     }
 
