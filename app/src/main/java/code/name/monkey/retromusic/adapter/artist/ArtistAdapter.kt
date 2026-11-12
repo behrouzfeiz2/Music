@@ -196,7 +196,9 @@ class ArtistAdapter(
         if (albums.size < 2) return
         imageView.setImageResource(R.drawable.default_album_art)
         coverExecutor.execute {
-            val bitmaps = albums.mapNotNull { album ->
+            // Keep one entry for every album. Missing artwork must not collapse
+            // the card positions or prevent the collage from being rendered.
+            val bitmaps = albums.map { album ->
                 val song = album.safeGetFirstSong()
                 runCatching {
                     val target = Glide.with(activity.applicationContext)
@@ -210,7 +212,6 @@ class ArtistAdapter(
                     }
                 }.getOrNull()
             }
-            if (bitmaps.size < 2) return@execute
             val size = 320
             val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(output)
@@ -222,7 +223,7 @@ class ArtistAdapter(
                 Triple(208f, 164f, 13f),
                 Triple(160f, 144f, 0f)
             )
-            bitmaps.take(3).forEachIndexed { index, bitmap ->
+            bitmaps.forEachIndexed { index, bitmap ->
                 val (centerX, centerY, rotation) = placements[index]
                 val rect = RectF(
                     centerX - cardWidth / 2f,
@@ -232,14 +233,29 @@ class ArtistAdapter(
                 )
                 canvas.save()
                 canvas.rotate(rotation, centerX, centerY)
-                paint.color = android.graphics.Color.WHITE
+
+                // Draw every album as a physical card, including albums without
+                // artwork. A missing cover becomes a black card in the same stack.
+                paint.style = Paint.Style.FILL
+                paint.color = if (bitmap == null) 0xFF151515.toInt() else android.graphics.Color.WHITE
                 paint.setShadowLayer(10f, 0f, 5f, 0x66000000)
                 canvas.drawRoundRect(rect, 12f, 12f, paint)
                 paint.clearShadowLayer()
-                val clip = Path().apply { addRoundRect(rect, 9f, 9f, Path.Direction.CW) }
+
+                val clip = Path().apply {
+                    addRoundRect(rect, 9f, 9f, Path.Direction.CW)
+                }
                 canvas.save()
                 canvas.clipPath(clip)
-                canvas.drawBitmap(bitmap, null, rect, paint)
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, null, rect, paint)
+                } else {
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = 2f
+                    paint.color = 0xFF555555.toInt()
+                    canvas.drawRoundRect(rect, 9f, 9f, paint)
+                    paint.style = Paint.Style.FILL
+                }
                 canvas.restore()
                 canvas.restore()
             }
@@ -252,7 +268,6 @@ class ArtistAdapter(
             }
         }
     }
-
     override fun getItemCount(): Int {
         return dataSet.size
     }
