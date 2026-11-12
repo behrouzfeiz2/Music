@@ -121,6 +121,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-palette-ktx = { group = "androidx.palette", name = "palette-ktx", version = "1.0.0" }
 androidx-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version = "1.6.1" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 
 
 
