@@ -1,8 +1,5 @@
 import java.util.Properties
 
-val spotifyClientId = providers.gradleProperty("spotifyClientId").orElse(providers.environmentVariable("SPOTIFY_CLIENT_ID")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
-val spotifyClientSecret = providers.gradleProperty("spotifyClientSecret").orElse(providers.environmentVariable("SPOTIFY_CLIENT_SECRET")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,6 +7,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
     alias(libs.plugins.google.devtools.ksp)
 }
+
+val spotifyClientId = providers.gradleProperty("spotifyClientId").orElse(providers.environmentVariable("SPOTIFY_CLIENT_ID")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
+val spotifyClientSecret = providers.gradleProperty("spotifyClientSecret").orElse(providers.environmentVariable("SPOTIFY_CLIENT_SECRET")).getOrElse("").replace("\\", "\\\\").replace("\"", "\\\"")
 
 android {
     compileSdk = 36
