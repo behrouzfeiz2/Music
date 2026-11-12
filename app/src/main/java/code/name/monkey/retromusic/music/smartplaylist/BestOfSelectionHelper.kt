@@ -31,15 +31,25 @@ object BestOfSelectionHelper : KoinComponent {
 
         val repository = get<RealRepository>()
         val lastFm = get<LastFMService>()
-        val bestSongs = SmartPlaylistEngine.buildLastFmMix(
+        val lastFmRankedSongs = SmartPlaylistEngine.buildLastFmMix(
             localSongs = localSongs,
             lastFm = lastFm,
             maxSongs = 50,
             apiKey = apiKey
         )
-        if (bestSongs.isEmpty()) {
+        if (lastFmRankedSongs.isEmpty()) {
             throw IllegalStateException(context.getString(R.string.smart_playlist_empty))
         }
+
+        // Prefer Last.fm-ranked tracks. If fewer than 50 are available locally,
+        // fill the remaining slots with the user's most-played selected tracks.
+        val selectedIds = localSongs.map { it.id }.toHashSet()
+        val rankedIds = lastFmRankedSongs.map { it.id }.toHashSet()
+        val localFavorites = repository.topPlayedSongs()
+            .filter { it.id in selectedIds && it.id !in rankedIds }
+        val bestSongs = (lastFmRankedSongs + localFavorites + localSongs)
+            .distinctBy { it.id }
+            .take(50)
 
         val baseName = context.getString(R.string.best_of_selection_playlist_name)
         var playlistName = baseName
