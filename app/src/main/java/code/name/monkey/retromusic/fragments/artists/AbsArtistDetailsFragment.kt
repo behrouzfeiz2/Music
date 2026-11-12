@@ -130,7 +130,7 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     }
 
     private fun setupRecyclerView() {
-        albumAdapter = object : AlbumAdapter(requireActivity(), ArrayList(), R.layout.item_list, this) {
+        albumAdapter = object : AlbumAdapter(requireActivity(), ArrayList<Album>(), R.layout.item_list, this@AbsArtistDetailsFragment) {
             override fun getAlbumText(album: Album): String =
                 MusicUtil.getYearString(album.year)
         }
