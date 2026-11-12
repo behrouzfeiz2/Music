@@ -11,8 +11,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +26,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
       SIGNING_KEYSTORE_GITHUB: ${{ secrets.SIGNING_KEYSTORE_GITHUB }}
       SIGNING_PROPERTIES_GITHUB: ${{ secrets.SIGNING_PROPERTIES_GITHUB }}
     steps:
