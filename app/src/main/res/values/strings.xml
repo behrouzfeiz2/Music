@@ -22,6 +22,13 @@
     <string name="smart_playlist_building">Matching your library with Last.fm rankings…</string>
     <string name="smart_playlist_empty">No matching ranked tracks were found in your Music folders.</string>
     <string name="smart_playlist_failed">Could not reach Last.fm. Please try again.</string>
+    <string name="lastfm_artwork_title">Artist artwork (Last.fm)</string>
+    <string name="lastfm_rebuild_archive">Download artist images</string>
+    <string name="lastfm_rebuild_summary">Scan your music library and save available artist images from Last.fm. Keep this page open until the scan finishes. Images are provided by Last.fm and remain subject to its API terms.</string>
+    <string name="lastfm_rebuild_starting">Preparing Last.fm archive scan… Please keep this page open.</string>
+    <string name="lastfm_rebuild_progress">Checking artist %1$d of %2$d… Keep this page open.</string>
+    <string name="lastfm_rebuild_complete">Scanned %1$d artists; saved %2$d artist images.</string>
+    <string name="lastfm_rebuild_failed">Could not reach Last.fm. Check your internet connection and try again.</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_cast">Cast</string>
     <string name="action_clear_playing_queue">Clear playing queue</string>
@@ -541,17 +548,6 @@
     <string name="try_retro_music_premium" translatable="false" />
     <string name="listing_files" translatable="false" />
 
-    <string name="spotify_rebuild_archive">Rebuild Music Archive</string>
-    <string name="spotify_rebuild_summary">Scan artists and cache their images from Spotify</string>
-    <string name="spotify_credentials_required">Enter your Spotify Client ID and Client Secret first.</string>
-    <string name="spotify_rebuild_starting">Preparing archive scan…</string>
-    <string name="spotify_rebuild_progress">Checking artist %1$d of %2$d…</string>
-    <string name="spotify_rebuild_complete">Scanned %1$d artists; cached images for %2$d.</string>
-    <string name="spotify_connect">Spotify Connect</string>
-    <string name="spotify_client_id">Client ID</string>
-    <string name="spotify_client_id_summary">Enter your Spotify application Client ID</string>
-    <string name="spotify_client_secret">Client Secret</string>
-    <string name="spotify_client_secret_summary">Enter your Spotify application Client Secret</string>
     <string name="about_developer">Developer: Behrouz Feiz</string>
     <string name="about_website">Website: Branex.ir</string>
     <string name="about_telegram">Telegram: branex_ir</string>
