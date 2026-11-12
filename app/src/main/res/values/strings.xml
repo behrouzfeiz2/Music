@@ -552,4 +552,9 @@
     <string name="spotify_client_id_summary">Enter your Spotify application Client ID</string>
     <string name="spotify_client_secret">Client Secret</string>
     <string name="spotify_client_secret_summary">Enter your Spotify application Client Secret</string>
+    <string name="about_developer">Developer: Behrouz Feiz</string>
+    <string name="about_website">Website: Branex.ir</string>
+    <string name="about_telegram">Telegram: branex_ir</string>
+    <string name="about_twitter">Twitter: branex_ir</string>
+    <string name="about_instagram">Instagram: branex_ir</string>
 </resources>
