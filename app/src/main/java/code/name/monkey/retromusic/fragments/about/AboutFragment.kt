@@ -53,6 +53,7 @@ class AboutFragment : Fragment(R.layout.fragment_about), View.OnClickListener {
     private fun setUpView() {
         binding.aboutContent.cardRetroInfo.appGithub.setOnClickListener(this)
         binding.aboutContent.cardRetroInfo.faqLink.setOnClickListener(this)
+        binding.aboutContent.cardRetroInfo.developerLink.setOnClickListener(this)
         binding.aboutContent.cardRetroInfo.appRate.setOnClickListener(this)
         binding.aboutContent.cardRetroInfo.appTranslation.setOnClickListener(this)
         binding.aboutContent.cardRetroInfo.appShare.setOnClickListener(this)
@@ -72,6 +73,7 @@ class AboutFragment : Fragment(R.layout.fragment_about), View.OnClickListener {
         when (view.id) {
             R.id.pinterestLink -> openUrl(Constants.PINTEREST)
             R.id.faqLink -> openUrl(Constants.FAQ_LINK)
+            R.id.developerLink -> openUrl("https://branex.ir")
             R.id.telegramLink -> openUrl(Constants.APP_TELEGRAM_LINK)
             R.id.appGithub -> openUrl(Constants.GITHUB_PROJECT)
             R.id.appTranslation -> openUrl(Constants.TRANSLATE)
