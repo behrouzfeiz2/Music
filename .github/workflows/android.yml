@@ -10,7 +10,6 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    env:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
