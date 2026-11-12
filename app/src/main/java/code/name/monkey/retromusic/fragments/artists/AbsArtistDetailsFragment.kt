@@ -293,7 +293,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             setPadding(dp(16), dp(8), dp(16), dp(8))
             isClickable = true
             isFocusable = true
-            background = requireContext().getDrawable(R.drawable.rect_selector)
         }
         val cover = ImageView(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
