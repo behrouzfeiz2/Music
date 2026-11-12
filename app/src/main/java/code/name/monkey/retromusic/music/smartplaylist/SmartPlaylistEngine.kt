@@ -9,6 +9,7 @@ import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.network.LastFMService
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -75,7 +76,6 @@ object SmartPlaylistEngine {
 
         val semaphore = Semaphore(1)
         val successfulRequests = AtomicInteger(0)
-        val matchedTracks = AtomicInteger(0)
         val requestErrors = java.util.concurrent.ConcurrentLinkedQueue<String>()
 
         val ranked = localArtists.mapIndexed { index, entry ->
@@ -92,9 +92,10 @@ object SmartPlaylistEngine {
                         } else {
                             successfulRequests.incrementAndGet()
                             val matches = parseMatches(response, artistName, entry.second, index)
-                            matchedTracks.addAndGet(matches.size)
                             matches
                         }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
                     } catch (error: Exception) {
                         requestErrors.add("${entry.first}: ${error.message ?: error.javaClass.simpleName}")
                         emptyList()
