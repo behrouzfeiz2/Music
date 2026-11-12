@@ -2,6 +2,7 @@
 <resources>
     <string name="about_album_label">About %s</string>
     <string name="about_settings_summary">Team, social links</string>
+    <string name="music_about_description">Music is an Android music player created by Behrouz Feyz. If you have a large personal music archive or listen to FLAC files, Music is designed for you: browse your collection directly by folders without the hassle of fixing audio tags, in a clean interface inspired by Spotify. Project website: Branex.ir. Source code: github.com/behrouzfeiz2/music.</string>
     <string name="accent_color">Accent color</string>
     <string name="accent_color_desc">The theme accent color, defaults to purple</string>
     <string name="action_about">About</string>
