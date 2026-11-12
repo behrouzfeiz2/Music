@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import code.name.monkey.retromusic.model.Artist
+import code.name.monkey.retromusic.music.folders.FolderArtistRepository
 import code.name.monkey.retromusic.repository.RealRepository
 import code.name.monkey.retromusic.util.CustomArtistImageUtil
 import kotlinx.coroutines.CancellationException
@@ -32,7 +33,7 @@ class LastFmArtistArtworkWorker(
     override suspend fun doWork(): androidx.work.ListenableWorker.Result = workerMutex.withLock {
         val artists = try {
             withContext(Dispatchers.IO) {
-                repository.fetchArtists().distinctBy { it.id }
+                FolderArtistRepository.artists(repository.allSongs()).distinctBy { it.id }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
