@@ -1,5 +1,7 @@
 package code.name.monkey.retromusic.fragments.artists
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spanned
@@ -13,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
+import android.net.Uri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -295,6 +298,19 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
                         AddToPlaylistDialog.create(playlists, songs)
                             .show(childFragmentManager, "ADD_PLAYLIST")
                     }
+                }
+                return true
+            }
+
+            R.id.action_search_artist_image -> {
+                val searchUri = Uri.parse(
+                    "https://www.google.com/search?tbm=isch&q=${Uri.encode(artist.name)}"
+                )
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, searchUri))
+                    showToast(getString(R.string.artist_image_google_help))
+                } catch (_: ActivityNotFoundException) {
+                    showToast(getString(R.string.artist_image_google_unavailable))
                 }
                 return true
             }
