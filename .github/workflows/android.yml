@@ -31,6 +31,17 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+      - name: Setup signing
+        if: github.event_name != 'pull_request'
+        env:
+          SIGNING_KEYSTORE_GITHUB: ${{ secrets.SIGNING_KEYSTORE_GITHUB }}
+          SIGNING_PROPERTIES_GITHUB: ${{ secrets.SIGNING_PROPERTIES_GITHUB }}
+        run: |
+          test -n "$SIGNING_KEYSTORE_GITHUB" || { echo "Missing SIGNING_KEYSTORE_GITHUB secret"; exit 1; }
+          test -n "$SIGNING_PROPERTIES_GITHUB" || { echo "Missing SIGNING_PROPERTIES_GITHUB secret"; exit 1; }
+          ./ci_signing_setup.sh
+          test -s retro.keystore
+          test -s retro.properties
       - name: Build
         run: ./gradlew app:assemble
       - uses: actions/upload-artifact@v4
