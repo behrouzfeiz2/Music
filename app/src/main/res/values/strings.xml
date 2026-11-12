@@ -540,6 +540,12 @@
     <string name="try_retro_music_premium" translatable="false" />
     <string name="listing_files" translatable="false" />
 
+    <string name="spotify_rebuild_archive">Rebuild Music Archive</string>
+    <string name="spotify_rebuild_summary">Scan artists and cache their images from Spotify</string>
+    <string name="spotify_credentials_required">Enter your Spotify Client ID and Client Secret first.</string>
+    <string name="spotify_rebuild_starting">Preparing archive scan…</string>
+    <string name="spotify_rebuild_progress">Checking artist %1$d of %2$d…</string>
+    <string name="spotify_rebuild_complete">Scanned %1$d artists; cached images for %2$d.</string>
     <string name="spotify_connect">Spotify Connect</string>
     <string name="spotify_client_id">Client ID</string>
     <string name="spotify_client_id_summary">Enter your Spotify application Client ID</string>
