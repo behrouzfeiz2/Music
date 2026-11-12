@@ -10,7 +10,7 @@ import code.name.monkey.retromusic.db.PlaylistEntity
 import code.name.monkey.retromusic.db.toSong
 import code.name.monkey.retromusic.db.toSongsEntity
 import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.repository.RealRepository
+import code.name.monkey.retromusic.repository.Repository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -22,7 +22,7 @@ object BestOfSelectionHelper : KoinComponent {
     suspend fun createPlaylist(context: Context, localSongs: List<Song>): Pair<String, Int> {
         require(localSongs.isNotEmpty()) { context.getString(R.string.smart_playlist_empty) }
 
-        val repository = get<RealRepository>()
+        val repository = get<Repository>()
         val selectedIds = localSongs.map { it.id }.toHashSet()
         val favorites = repository.favoritePlaylistSongs()
             .map { it.toSong() }
