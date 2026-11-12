@@ -395,7 +395,7 @@ class FoldersFragment : AbsMainActivityFragment(R.layout.fragment_folder),
                         }
                         try {
                             val result = withContext(Dispatchers.IO) {
-                                BestOfSelectionHelper.createPlaylist(appContext, songs)
+                                BestOfSelectionHelper.createPlaylist(appContext, selectedFolders, songs)
                             }
                             Toast.makeText(
                                 requireContext(),
