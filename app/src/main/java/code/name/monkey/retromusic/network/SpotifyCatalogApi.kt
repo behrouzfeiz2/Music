@@ -103,7 +103,8 @@ object SpotifyCatalogApi {
             )
         }
 
-    @Synchronized\n    private fun getAccessToken(): String? {
+    @Synchronized
+    private fun getAccessToken(): String? {
         val now = System.currentTimeMillis()
         accessToken?.takeIf { now < tokenExpiresAt - 60_000L }?.let { return it }
         val credentials = "${BuildConfig.SPOTIFY_CLIENT_ID}:${BuildConfig.SPOTIFY_CLIENT_SECRET}"
