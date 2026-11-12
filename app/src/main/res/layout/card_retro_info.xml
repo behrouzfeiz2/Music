@@ -118,7 +118,7 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/faqLink"
-            app:listItemIcon="@drawable/ic_code"
+            app:listItemIcon="@drawable/ic_github_circle"
             app:listItemSummary="@string/developer_credit_summary"
             app:listItemTitle="@string/developer_credit_title" />
 
