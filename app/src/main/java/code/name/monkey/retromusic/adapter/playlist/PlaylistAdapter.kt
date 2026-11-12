@@ -25,6 +25,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.appthemehelper.util.ATHUtil
 import code.name.monkey.appthemehelper.util.TintHelper
 import code.name.monkey.retromusic.R
@@ -43,6 +44,7 @@ import code.name.monkey.retromusic.interfaces.IPlaylistClickListener
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
+import code.name.monkey.retromusic.util.PlaylistPinStore
 import com.bumptech.glide.Glide
 import me.zhanghai.android.fastscroll.PopupTextProvider
 
@@ -50,18 +52,35 @@ class PlaylistAdapter(
     override val activity: FragmentActivity,
     var dataSet: List<PlaylistWithSongs>,
     private var itemLayoutRes: Int,
-    private val listener: IPlaylistClickListener
+    private val listener: IPlaylistClickListener,
+    private val onPinToggle: (PlaylistWithSongs) -> Unit = {}
 ) : AbsMultiSelectAdapter<PlaylistAdapter.ViewHolder, PlaylistWithSongs>(
     activity,
     R.menu.menu_playlists_selection
 ), PopupTextProvider {
+
+    private var allPlaylists: List<PlaylistWithSongs> = dataSet
+    private var pinnedPlaylistIds: List<Long> = emptyList()
 
     init {
         setHasStableIds(true)
     }
 
     fun swapDataSet(dataSet: List<PlaylistWithSongs>) {
-        this.dataSet = dataSet
+        allPlaylists = dataSet
+        updateOrderedDataSet()
+    }
+
+    fun setPinnedPlaylistIds(ids: List<Long>) {
+        pinnedPlaylistIds = ids.distinct().take(PlaylistPinStore.MAX_PINNED_PLAYLISTS)
+        updateOrderedDataSet()
+    }
+
+    private fun updateOrderedDataSet() {
+        val pinnedOrder = pinnedPlaylistIds.withIndex().associate { it.value to it.index }
+        dataSet = allPlaylists.sortedBy { playlist ->
+            pinnedOrder[playlist.playlistEntity.playListId] ?: Int.MAX_VALUE
+        }
         notifyDataSetChanged()
     }
 
@@ -103,6 +122,8 @@ class PlaylistAdapter(
         holder.title?.text = getPlaylistTitle(playlist.playlistEntity)
         holder.text?.text = getPlaylistText(playlist)
         holder.menu?.isGone = isChecked(playlist)
+        holder.pinnedIndicator?.isVisible =
+            pinnedPlaylistIds.contains(playlist.playlistEntity.playListId)
         if (itemLayoutRes == R.layout.item_list) {
             holder.image?.setPadding(activity.dipToPix(8F).toInt())
             holder.image?.setImageDrawable(getIconRes())
@@ -151,12 +172,30 @@ class PlaylistAdapter(
     }
 
     inner class ViewHolder(itemView: View) : MediaEntryViewHolder(itemView) {
+        val pinnedIndicator: View? = itemView.findViewById(R.id.pinned_indicator)
+
         init {
             menu?.setOnClickListener { view ->
+                val position = bindingAdapterPosition
+                if (position == RecyclerView.NO_POSITION) return@setOnClickListener
+                val playlist = dataSet[position]
                 val popupMenu = PopupMenu(activity, view)
                 popupMenu.inflate(R.menu.menu_item_playlist)
+                popupMenu.menu.findItem(R.id.action_pin_playlist).title =
+                    activity.getString(
+                        if (pinnedPlaylistIds.contains(playlist.playlistEntity.playListId)) {
+                            R.string.unpin_playlist
+                        } else {
+                            R.string.pin_playlist
+                        }
+                    )
                 popupMenu.setOnMenuItemClickListener { item ->
-                    PlaylistMenuHelper.handleMenuClick(activity, dataSet[layoutPosition], item)
+                    if (item.itemId == R.id.action_pin_playlist) {
+                        onPinToggle(playlist)
+                        true
+                    } else {
+                        PlaylistMenuHelper.handleMenuClick(activity, playlist, item)
+                    }
                 }
                 popupMenu.show()
             }
