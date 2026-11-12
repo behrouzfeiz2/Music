@@ -110,6 +110,19 @@
             app:listItemTitle="@string/action_share" />
 
         <code.name.monkey.retromusic.views.ListItemView
+            android:id="@+id/developerLink"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/faqLink"
+            app:listItemIcon="@drawable/ic_code"
+            app:listItemSummary="@string/developer_credit_summary"
+            app:listItemTitle="@string/developer_credit_title" />
+
+        <code.name.monkey.retromusic.views.ListItemView
             android:id="@+id/faqLink"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
