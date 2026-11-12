@@ -22,6 +22,10 @@
     <string name="smart_playlist_building">Matching your library with Last.fm rankings…</string>
     <string name="smart_playlist_empty">No matching ranked tracks were found in your Music folders.</string>
     <string name="smart_playlist_failed">Could not reach Last.fm. Please try again.</string>
+    <string name="lastfm_api_key_title">Last.fm API key</string>
+    <string name="lastfm_api_key_summary">Enter the API key from your Last.fm account. This key is used to retrieve artist images.</string>
+    <string name="lastfm_shared_secret_title">Last.fm shared secret</string>
+    <string name="lastfm_shared_secret_summary">Optional. Saved on this device for future Last.fm features; artist image lookup does not require it.</string>
     <string name="lastfm_artwork_title">Artist artwork (Last.fm)</string>
     <string name="lastfm_rebuild_archive">Download artist images</string>
     <string name="lastfm_rebuild_summary">Scan your music library and save available artist images from Last.fm. Keep this page open until the scan finishes. Images are provided by Last.fm and remain subject to its API terms.</string>
