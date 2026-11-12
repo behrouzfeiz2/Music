@@ -138,20 +138,32 @@ class ArtistAdapter(
     }
 
     private fun loadArtistImage(artist: Artist, holder: ViewHolder) {
-        if (holder.image == null) {
-            return
+        val imageView = holder.image ?: return
+        when {
+            artist.albums.size >= 2 -> {
+                loadFolderCollage(artist, holder)
+                return
+            }
+            artist.albums.size == 1 -> {
+                imageView.tag = artist.id
+                Glide.with(activity)
+                    .load(RetroGlideExtension.getSongModel(artist.albums.first().safeGetFirstSong()))
+                    .placeholder(R.drawable.default_album_art)
+                    .error(R.drawable.default_album_art)
+                    .into(imageView)
+                return
+            }
         }
         Glide.with(activity)
             .asBitmapPalette()
             .artistImageOptions(artist)
             .load(RetroGlideExtension.getArtistModel(artist))
             .transition(RetroGlideExtension.getDefaultTransition())
-            .into(object : RetroMusicColoredTarget(holder.image!!) {
+            .into(object : RetroMusicColoredTarget(imageView) {
                 override fun onColorReady(colors: MediaNotificationProcessor) {
                     setColors(colors, holder)
                 }
             })
-        loadFolderCollage(artist, holder)
     }
 
     private fun loadFolderCollage(artist: Artist, holder: ViewHolder) {
