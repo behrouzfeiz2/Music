@@ -50,9 +50,8 @@ object RetroGlideExtension {
         get() = R.drawable.material_design_default
 
     private val DEFAULT_DISK_CACHE_STRATEGY_ARTIST = DiskCacheStrategy.RESOURCE
-    private val DEFAULT_DISK_CACHE_STRATEGY = DiskCacheStrategy.NONE
+    private val DEFAULT_DISK_CACHE_STRATEGY = DiskCacheStrategy.AUTOMATIC
 
-    private const val DEFAULT_ANIMATION = android.R.anim.fade_in
 
     fun RequestManager.asBitmapPalette(): RequestBuilder<BitmapPaletteWrapper> {
         return this.`as`(BitmapPaletteWrapper::class.java)
@@ -107,6 +106,7 @@ object RetroGlideExtension {
             .placeholder(getDrawable(DEFAULT_ARTIST_IMAGE))
             .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
             .signature(createSignature(artist))
+            .dontAnimate()
     }
 
     fun <T> RequestBuilder<T>.songCoverOptions(
@@ -116,6 +116,7 @@ object RetroGlideExtension {
             .error(getDrawable(DEFAULT_SONG_IMAGE))
             .placeholder(getDrawable(DEFAULT_SONG_IMAGE))
             .signature(createSignature(song))
+            .dontAnimate()
     }
 
     fun <T> RequestBuilder<T>.simpleSongCoverOptions(
@@ -190,7 +191,7 @@ object RetroGlideExtension {
     }
 
     fun <TranscodeType> getDefaultTransition(): GenericTransitionOptions<TranscodeType> {
-        return GenericTransitionOptions<TranscodeType>().transition(DEFAULT_ANIMATION)
+        return GenericTransitionOptions<TranscodeType>().dontTransition()
     }
 
     fun getDrawable(@DrawableRes id: Int): Drawable? {
