@@ -8,6 +8,13 @@
     <string name="action_add_to_blacklist">افزودن به لیست سیاه</string>
     <string name="action_add_to_favorites">افزودن به موارد مورد علاقه</string>
     <string name="action_add_to_playing_queue">افزودن به لیست پخش آهنگ</string>
+    <string name="make_best_of">ساخت بهترین‌های این هنرمند</string>
+    <string name="best_of_building">در حال ساخت بهترین‌های %1$s…</string>
+    <string name="best_of_playlist_name">%1$s Best of</string>
+    <string name="best_of_empty">آهنگ رتبه‌بندی‌شده‌ای از %1$s در فایل‌های محلی پیدا نشد.</string>
+    <string name="best_of_created">پلی‌لیست بهترین‌های %1$s با %2$d آهنگ ساخته شد.</string>
+    <string name="developer_credit_title">طراحی و توسعه: بهروز فیض</string>
+    <string name="developer_credit_summary">Branex.ir</string>
     <string name="smart_playlist">ساخت میکس هوشمند با Last.fm</string>
     <string name="smart_playlist_name">میکس هوشمند Last.fm</string>
     <string name="smart_playlist_building">در حال تطبیق کتابخانه موسیقی با رتبه‌بندی Last.fm…</string>
@@ -218,7 +225,7 @@
     <string name="light_theme_name">کاملا سفید</string>
     <string name="listeners_label">شنوندگان</string>
     <string name="lyrics">متن ترانه</string>
-    <string name="made_with_love">ساخته شده با ❤️ در هند</string>
+    <string name="made_with_love">طراحی و توسعه: بهروز فیض</string>
     <string name="material">تم material</string>
     <string name="md_error_label">خطا</string>
     <string name="md_storage_perm_error">خطای دسترسی</string>
@@ -270,7 +277,7 @@
     <string name="personalize_settings_summary">صفحه پخش اهنگ و رابط کاربری برنامه را شخصی سازی کنید</string>
     <string name="pick_from_local_storage">از فضای ذخیره‌سازی داخلی انتخاب کنید</string>
     <string name="pinterest_page">پینترست</string>
-    <string name="pinterest_page_summary">صفحه پینترست را برای الهام گرفتن از طراحی Retro Music دنبال کنید</string>
+    <string name="pinterest_page_summary">صفحه پینترست را برای الهام گرفتن از طراحی دنبال کنید</string>
     <string name="plain">ساده</string>
     <string name="playback_pitch">میزان صدا</string>
     <string name="playback_settings">تنظیمات پخش</string>
@@ -320,7 +327,7 @@
     <string name="pref_summary_home_banner">نمایش یا عدم نمایش نوار</string>
     <string name="pref_summary_ignore_media_store_artwork">می تواند کیفیت جلد آلبوم را افزایش دهد، اما باعث کندی بارگذاری تصویر می شود. فقط اگر با آثار هنری با وضوح پایین مشکل دارید این را فعال کنید</string>
     <string name="pref_summary_library_categories">قابلیت مشاهده و ترتیب دسته‌های کتابخانه را پیکربندی کنید.</string>
-    <string name="pref_summary_lock_screen">از کنترل‌های صفحه قفل سفارشی Retro Music استفاده کنید</string>
+    <string name="pref_summary_lock_screen">از کنترل‌های سفارشی صفحه قفل Music استفاده کنید</string>
     <string name="pref_summary_manage_audio_focus">همیشه صدا را در پس زمینه بدون توجه به هر چیز دیگری که در حال پخش است پخش کنید</string>
     <string name="pref_summary_open_source_licences">جزئیات مجوز برای نرم‌افزار منبع باز</string>
     <string name="pref_summary_pause_history">وقتی فعال باشد، آهنگ‌های تازه پخش شده در تاریخ نمایش داده نمی‌شوند</string>
@@ -399,7 +406,7 @@
     <string name="reset_action">بازنشانی</string>
     <string name="reset_artist_image">تنظیم مجدد تصویر هنرمند</string>
     <string name="restore">بازیابی</string>
-    <string name="retro_music_player">پخش‌کننده موسیقی Retro</string>
+    <string name="retro_music_player">Music</string>
     <string name="ringtone_summary">برنامه برای دسترسی به تنظیمات دستگاه شما برای تنظیم موسیقی به عنوان آهنگ زنگ نیاز به مجوز دارد</string>
     <string name="ringtone_title">آهنگ زنگ (اختیاری)</string>
     <string name="permission_alarm_summary">این برنامه برای تنظیم تایمر خواب نیازمند دسترسی به برنامه‌ریزی آلارم دارد</string>
@@ -481,7 +488,7 @@
     <string name="translate">ترجمه کردن</string>
     <string name="translate_community">به ما کمک کنید تا برنامه را به زبان شما ترجمه کنیم</string>
     <string name="twitter_page">توییتر</string>
-    <string name="twitter_page_summary">طرح خود را با موسیقی Retro به اشتراک بگذارید</string>
+    <string name="twitter_page_summary">طرح خود را با دیگران به اشتراک بگذارید</string>
     <string name="unlabeled">بدون برچسب</string>
     <string name="unplayable_file">این آهنگ پخش نمیشود.</string>
     <string name="up_next">تا بعدی</string>
