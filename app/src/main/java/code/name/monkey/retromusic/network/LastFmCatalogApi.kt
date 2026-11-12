@@ -54,9 +54,14 @@ object LastFmCatalogApi {
 
                     val root = JSONObject(body)
                     if (root.has("error")) {
+                        val errorCode = root.optInt("error")
                         val message = root.optString("message").take(120)
+                        // Last.fm error 6 commonly means this artist is not in its catalogue.
+                        // Treat it as a normal "no image" result so one unknown artist
+                        // does not abort the entire library scan.
+                        if (errorCode == 6) return@withContext null
                         throw IllegalStateException(
-                            "Last.fm API error ${root.optInt("error")}" +
+                            "Last.fm API error $errorCode" +
                                 if (message.isNotBlank()) ": $message" else ""
                         )
                     }
@@ -69,10 +74,10 @@ object LastFmCatalogApi {
                             val item = images.optJSONObject(i) ?: continue
                             if (item.optString("size") != size) continue
                             val candidate = item.optString("#text")
-                            if (candidate.startsWith("https://") &&
+                            if ((candidate.startsWith("https://") || candidate.startsWith("http://")) &&
                                 !candidate.contains("2a96cbd8b46e442fc41c2b86b821562f")
                             ) {
-                                imageUrl = candidate
+                                imageUrl = candidate.replaceFirst("http://", "https://")
                                 break
                             }
                         }
