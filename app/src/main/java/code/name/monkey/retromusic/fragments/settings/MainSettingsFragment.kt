@@ -22,6 +22,7 @@ import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import code.name.monkey.appthemehelper.ThemeStore
+import code.name.monkey.retromusic.BuildConfig
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.databinding.FragmentMainSettingsBinding
 import code.name.monkey.retromusic.extensions.drawAboveSystemBarsWithPadding
@@ -38,7 +39,6 @@ class MainSettingsFragment : Fragment(), View.OnClickListener {
                 R.id.generalSettings -> R.id.action_mainSettingsFragment_to_themeSettingsFragment
                 R.id.audioSettings -> R.id.action_mainSettingsFragment_to_audioSettings
                 R.id.personalizeSettings -> R.id.action_mainSettingsFragment_to_personalizeSettingsFragment
-                R.id.imageSettings -> R.id.action_mainSettingsFragment_to_imageSettingFragment
                 R.id.otherSettings -> R.id.action_mainSettingsFragment_to_otherSettingsFragment
                 R.id.nowPlayingSettings -> R.id.action_mainSettingsFragment_to_nowPlayingSettingsFragment
                 R.id.backup_restore_settings -> R.id.action_mainSettingsFragment_to_backupFragment
@@ -64,9 +64,9 @@ class MainSettingsFragment : Fragment(), View.OnClickListener {
         binding.audioSettings.setOnClickListener(this)
         binding.nowPlayingSettings.setOnClickListener(this)
         binding.personalizeSettings.setOnClickListener(this)
-        binding.imageSettings.setOnClickListener(this)
         binding.otherSettings.setOnClickListener(this)
         binding.backupRestoreSettings.setOnClickListener(this)
+        binding.appVersion.text = "${getString(R.string.version)} ${BuildConfig.VERSION_NAME}"
         binding.aboutSettings.setOnClickListener(this)
 
         binding.container.drawAboveSystemBarsWithPadding()
