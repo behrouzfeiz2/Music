@@ -230,10 +230,6 @@ private constructor(private val mContext: Context) : ThemeStorePrefKeys, ThemeSt
         @CheckResult
         @ColorInt
         fun accentColor(context: Context): Int {
-            // Set MD3 accent if MD3 is enabled or in-app accent otherwise
-            if (isMD3Enabled(context) && VersionUtils.hasS()) {
-                return ContextCompat.getColor(context, R.color.m3_accent_color)
-            }
             val desaturatedColor = prefs(context).getBoolean("desaturated_color", false)
             val color = if (isWallpaperAccentEnabled(context)) {
                 wallpaperColor(context, isWindowBackgroundDark(context))
