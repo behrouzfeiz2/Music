@@ -53,13 +53,6 @@
         android:layout="@layout/preference_category_title"
         android:title="@string/pref_header_library">
 
-        <code.name.monkey.retromusic.preferences.LibraryPreference
-            android:key="library_categories"
-            android:layout="@layout/list_item_view"
-            android:summary="@string/pref_summary_library_categories"
-            android:title="@string/library_categories"
-            app:icon="@drawable/ic_library_music" />
-
         <code.name.monkey.appthemehelper.common.prefs.supportv7.ATESwitchPreference
             android:defaultValue="true"
             android:key="remember_last_tab"

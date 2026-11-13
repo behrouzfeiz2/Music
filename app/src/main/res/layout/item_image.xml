@@ -9,8 +9,8 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/imageContainer"
-        android:layout_width="156dp"
-        android:layout_height="156dp"
+        android:layout_width="312dp"
+        android:layout_height="312dp"
         android:layout_margin="8dp"
         android:orientation="vertical"
         app:cardBackgroundColor="@color/transparent"
