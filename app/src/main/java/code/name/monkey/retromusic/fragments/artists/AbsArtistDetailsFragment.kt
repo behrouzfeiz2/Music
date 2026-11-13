@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.text.Spanned
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,10 +13,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.os.bundleOf
-import androidx.core.text.parseAsHtml
 import android.net.Uri
 import androidx.core.view.doOnPreDraw
-import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -42,8 +39,6 @@ import code.name.monkey.retromusic.helper.SortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.Artist
-import code.name.monkey.retromusic.network.Result
-import code.name.monkey.retromusic.network.model.LastFmArtist
 import code.name.monkey.retromusic.repository.RealRepository
 import code.name.monkey.retromusic.util.*
 import com.bumptech.glide.Glide
@@ -67,9 +62,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     private lateinit var songAdapter: SimpleSongAdapter
     private lateinit var albumAdapter: AlbumAdapter
     private var forceDownload: Boolean = false
-    private var lang: String? = null
-    private var biography: Spanned? = null
-
     private val savedSongSortOrder: String
         get() = PreferenceUtil.artistDetailSongSortOrder
     private val savedAlbumSortOrder: String
@@ -106,13 +98,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             setOnClickListener { MusicPlayerRemote.openAndShuffleQueue(artist.songs, true) }
         }
 
-        binding.biographyText.setOnClickListener {
-            if (binding.biographyText.maxLines == 4) {
-                binding.biographyText.maxLines = Integer.MAX_VALUE
-            } else {
-                binding.biographyText.maxLines = 4
-            }
-        }
         setupSongSortButton()
         setupAlbumSortButton()
         binding.appBarLayout?.statusBarForeground =
@@ -144,9 +129,6 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
             return
         }
         this.artist = artist
-        if (PreferenceUtil.isAllowedToDownloadMetadata(requireContext())) {
-            loadBiography(artist.name)
-        }
         binding.artistTitle.text = artist.name
         binding.text.text = String.format(
             "%s • %s",
@@ -166,64 +148,21 @@ abstract class AbsArtistDetailsFragment : AbsMainActivityFragment(R.layout.fragm
     }
 
 
-    private fun loadBiography(
-        name: String,
-        lang: String? = Locale.getDefault().language,
-    ) {
-        biography = null
-        this.lang = lang
-        detailsViewModel.getArtistInfo(name, lang, null).observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Loading -> logD("Loading")
-                is Result.Error -> logE("Error")
-                is Result.Success -> artistInfo(result.data)
-            }
-        }
-    }
-
-    private fun artistInfo(lastFmArtist: LastFmArtist?) {
-        if (lastFmArtist != null && lastFmArtist.artist != null && lastFmArtist.artist.bio != null) {
-            val bioContent = lastFmArtist.artist.bio.content
-            if (bioContent != null && bioContent.trim().isNotEmpty()) {
-                binding.biographyTitle.isVisible = true
-                binding.biographyText.isVisible = true
-                biography = bioContent.parseAsHtml()
-                binding.biographyText.text = biography
-                if (lastFmArtist.artist.stats.listeners.isNotEmpty()) {
-                    binding.fragmentArtistContent.run {
-                        listeners.show()
-                        listenersLabel.show()
-                        scrobbles.show()
-                        scrobblesLabel.show()
-                        listeners.text =
-                            RetroUtil.formatValue(lastFmArtist.artist.stats.listeners.toFloat())
-                        scrobbles.text =
-                            RetroUtil.formatValue(lastFmArtist.artist.stats.playcount.toFloat())
-                    }
-                }
-            }
-        }
-
-        // If the "lang" parameter is set and no biography is given, retry with default language
-        if (biography == null && lang != null) {
-            loadBiography(artist.name, null)
-        }
-    }
-
     private fun loadArtistImage(artist: Artist) {
         Glide.with(requireContext()).asBitmapPalette().artistImageOptions(artist)
             .load(RetroGlideExtension.getArtistModel(artist)).dontAnimate()
             .into(object : SingleColorTarget(binding.image) {
                 override fun onColorReady(color: Int) {
-                    setColors(color)
+                    setColors()
                 }
             })
     }
 
-    private fun setColors(color: Int) {
+    private fun setColors() {
         if (_binding != null) {
-            binding.fragmentArtistContent.shuffleAction.applyColor(color)
-            binding.fragmentArtistContent.playAction.applyOutlineColor(color)
+            val accentColor = code.name.monkey.appthemehelper.ThemeStore.accentColor(requireContext())
+            binding.fragmentArtistContent.shuffleAction.applyColor(accentColor)
+            binding.fragmentArtistContent.playAction.applyOutlineColor(accentColor)
         }
     }
 

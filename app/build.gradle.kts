@@ -22,8 +22,8 @@ android {
         }
 
         applicationId = namespace
-        versionCode = 10802
-        versionName = "1.1.2"
+        versionCode = 20000
+        versionName = "2.0.0"
 
         buildConfigField("String", "GOOGLE_PLAY_LICENSING_KEY", "\"${getProperty(getProperties("../public.properties"), "GOOGLE_PLAY_LICENSE_KEY")}\"")
     }

@@ -15,13 +15,18 @@
 package code.name.monkey.retromusic.activities.base
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode
 import androidx.core.os.LocaleListCompat
+import code.name.monkey.appthemehelper.ThemeStore
 import code.name.monkey.appthemehelper.common.ATHToolbarActivity
 import code.name.monkey.appthemehelper.util.VersionUtils
 import code.name.monkey.retromusic.R
@@ -38,10 +43,43 @@ import code.name.monkey.retromusic.extensions.surfaceColor
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.theme.getNightMode
 import code.name.monkey.retromusic.util.theme.getThemeResValue
+import com.google.android.material.button.MaterialButton
 
 abstract class AbsThemeActivity : ATHToolbarActivity(), Runnable {
 
     private val handler = Handler(Looper.getMainLooper())
+    private var accentTreeObserver: ViewTreeObserver? = null
+    private var accentLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
+    override fun onContentChanged() {
+        super.onContentChanged()
+        val content = findViewById<ViewGroup>(android.R.id.content) ?: return
+        accentLayoutListener?.let { listener ->
+            accentTreeObserver?.takeIf { it.isAlive }?.removeOnGlobalLayoutListener(listener)
+        }
+        val observer = content.viewTreeObserver
+        val listener = ViewTreeObserver.OnGlobalLayoutListener { applyAccentToButtons(content) }
+        accentTreeObserver = observer
+        accentLayoutListener = listener
+        observer.addOnGlobalLayoutListener(listener)
+        content.post { applyAccentToButtons(content) }
+    }
+
+    private fun applyAccentToButtons(view: View) {
+        val accentColor = ThemeStore.accentColor(this)
+        if (view is MaterialButton) {
+            val values = view.context.obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.colorPrimary))
+            val primaryColor = try { values.getColor(0, Int.MIN_VALUE) } finally { values.recycle() }
+            if (primaryColor != Int.MIN_VALUE) {
+                val tint = ColorStateList.valueOf(accentColor)
+                if (view.backgroundTintList?.defaultColor == primaryColor) view.backgroundTintList = tint
+                if (view.strokeColor?.defaultColor == primaryColor) view.strokeColor = tint
+                if (view.iconTint?.defaultColor == primaryColor) view.iconTint = tint
+                if (view.textColors.defaultColor == primaryColor) view.setTextColor(tint)
+            }
+        }
+        if (view is ViewGroup) for (index in 0 until view.childCount) applyAccentToButtons(view.getChildAt(index))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         updateLocale()
@@ -98,6 +136,11 @@ abstract class AbsThemeActivity : ATHToolbarActivity(), Runnable {
     }
 
     public override fun onDestroy() {
+        accentLayoutListener?.let { listener ->
+            accentTreeObserver?.takeIf { it.isAlive }?.removeOnGlobalLayoutListener(listener)
+        }
+        accentLayoutListener = null
+        accentTreeObserver = null
         super.onDestroy()
         exitFullscreen()
     }

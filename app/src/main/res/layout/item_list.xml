@@ -42,8 +42,8 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/image"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:layout_gravity="center_vertical"
             android:gravity="center_vertical"
             android:scaleType="centerCrop"

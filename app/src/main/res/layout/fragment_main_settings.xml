@@ -51,14 +51,6 @@
             app:settingListItemTitle="@string/personalize" />
 
 
-        <code.name.monkey.retromusic.views.SettingListItemView
-            android:id="@+id/imageSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:settingListItemIcon="@drawable/ic_image"
-            app:settingListItemIconColor="@color/md_deep_orange_A400"
-            app:settingListItemText="@string/image_settings_summary"
-            app:settingListItemTitle="@string/pref_header_images" />
 
         <code.name.monkey.retromusic.views.SettingListItemView
             android:id="@+id/otherSettings"
@@ -77,6 +69,17 @@
             app:settingListItemIconColor="@color/md_cyan_400"
             app:settingListItemText="@string/backup_restore_settings_summary"
             app:settingListItemTitle="@string/backup_restore_title" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/appVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:textAppearance="@style/TextViewBody2"
+            android:textColor="?android:attr/textColorTertiary"
+            tools:text="Version 2.0.0" />
 
         <code.name.monkey.retromusic.views.SettingListItemView
             android:id="@+id/aboutSettings"
